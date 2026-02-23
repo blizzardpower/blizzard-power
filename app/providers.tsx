@@ -11,7 +11,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: "light",
-  t: THEMES.light,
+  t: THEMES.light as ThemeColors,
   toggleTheme: () => {},
 });
 

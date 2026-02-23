@@ -44,7 +44,7 @@ export const THEMES = {
 } as const;
 
 export type ThemeName = "light" | "dark";
-export type ThemeColors = typeof THEMES.light;
+export type ThemeColors = (typeof THEMES)["light"] | (typeof THEMES)["dark"];
 
 export const sectorColorMap = {
   Residential: { base: "#1a8bb3", dark: "#4dc9f6" },
