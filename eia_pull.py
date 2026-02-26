@@ -28,13 +28,12 @@ with open("public/data/brent_crude_monthly.csv", "w", newline="") as f:
 print("Brent crude data saved.")
 
 # --- Henry Hub Natural Gas ---
-gas_url = "https://api.eia.gov/v2/natural-gas/pri/sum/data/"
+gas_url = "https://api.eia.gov/v2/natural-gas/pri/fut/data/"
 gas_params = {
     "api_key": API_KEY,
     "frequency": "monthly",
     "data[0]": "value",
-    "facets[process][]": "PRS",
-    "facets[duoarea][]": "SLA",
+    "facets[series][]": "RNGWHHD",
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
     "length": 60
