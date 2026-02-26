@@ -82,31 +82,12 @@ export default function Navigation() {
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
-      <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-        <div
-          style={{
-            width: "28px",
-            height: "28px",
-            borderRadius: "4px",
-            background: `linear-gradient(135deg, ${t.accent}, ${t.accentDim})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <span style={{ fontSize: "16px", fontWeight: 800, color: theme === "dark" ? "#0a0e14" : "#ffffff" }}>{"\u26A1"}</span>
-        </div>
-        <span
-          style={{
-            fontSize: "17px",
-            fontWeight: 700,
-            color: t.text,
-            letterSpacing: "-0.02em",
-            fontFamily: "'Space Mono', monospace",
-          }}
-        >
-          BLIZZARD POWER
-        </span>
+      <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+        <img
+          src="/blizzard.svg"
+          alt="Blizzard Power"
+          style={{ height: "55px", width: "auto" }}
+        />
       </Link>
       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         {links.map((link) => {

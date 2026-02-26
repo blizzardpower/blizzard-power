@@ -25,8 +25,8 @@ export function Sparkline({
     })
     .join(" ");
   return (
-    <svg width={width} height={height} style={{ display: "block" }}>
-      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={width} height={height} style={{ display: "block" }} suppressHydrationWarning>
+      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" suppressHydrationWarning />
     </svg>
   );
 }

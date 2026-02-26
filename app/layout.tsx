@@ -4,7 +4,7 @@ import { ThemeProvider } from "./providers";
 import Navigation from "@/components/Navigation";
 
 export const metadata: Metadata = {
-  title: "Blizzard Power — Data-Driven Energy Intelligence",
+  title: "Blizzard Power",
   description:
     "Tracking the economics of energy across residential, power, transportation, agriculture, and industry sectors.",
 };

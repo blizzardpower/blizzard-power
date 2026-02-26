@@ -39,17 +39,7 @@ export default function HomePage() {
 
   return (
     <div style={{ padding: "0 40px" }}>
-      <div style={{ paddingTop: "100px", paddingBottom: "48px" }}>
-        <div style={{ fontSize: "11px", fontWeight: 600, color: t.accent, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "12px", fontFamily: "'Space Mono', monospace" }}>
-          Data-Driven Energy Intelligence
-        </div>
-        <h1 style={{ fontSize: "42px", fontWeight: 700, color: t.text, lineHeight: 1.15, maxWidth: "680px", letterSpacing: "-0.025em" }}>
-          Tracking the economics of energy across every sector
-        </h1>
-        <p style={{ fontSize: "16px", color: t.textMuted, marginTop: "16px", maxWidth: "560px", lineHeight: 1.65 }}>
-          Residential. Power. Transportation. Agriculture. Industry. Rigorous analysis grounded in data, free from advocacy.
-        </p>
-      </div>
+      <div style={{ paddingTop: "50px", paddingBottom: "48px" }} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "56px" }}>
         {stats.map((s) => (
