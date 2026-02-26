@@ -4,9 +4,9 @@ import os
 
 API_KEY = os.environ.get("EIA_API_KEY", "IkcNkbTDqH1oNOURXHQu2wlCM6YtFaoyPu2iHnVh")
 
-url = "https://api.eia.gov/v2/petroleum/pri/spt/data/"
-
-params = {
+# --- Brent Crude ---
+brent_url = "https://api.eia.gov/v2/petroleum/pri/spt/data/"
+brent_params = {
     "api_key": API_KEY,
     "frequency": "monthly",
     "data[0]": "value",
@@ -16,11 +16,8 @@ params = {
     "length": 60
 }
 
-response = requests.get(url, params=params)
+response = requests.get(brent_url, params=brent_params)
 data = response.json()
-
-for row in data["response"]["data"]:
-    print(f"{row['period']}  |  ${row['value']} per barrel  |  {row['product-name']}")
 
 with open("public/data/brent_crude_monthly.csv", "w", newline="") as f:
     writer = csv.writer(f)
@@ -28,4 +25,28 @@ with open("public/data/brent_crude_monthly.csv", "w", newline="") as f:
     for row in data["response"]["data"]:
         writer.writerow([row["period"], row["value"], row["product-name"]])
 
-print("\nSaved to public/data/brent_crude_monthly.csv")
+print("Brent crude data saved.")
+
+# --- Henry Hub Natural Gas ---
+gas_url = "https://api.eia.gov/v2/natural-gas/pri/sum/data/"
+gas_params = {
+    "api_key": API_KEY,
+    "frequency": "monthly",
+    "data[0]": "value",
+    "facets[process][]": "PRS",
+    "facets[duoarea][]": "SLA",
+    "sort[0][column]": "period",
+    "sort[0][direction]": "desc",
+    "length": 60
+}
+
+response = requests.get(gas_url, params=gas_params)
+data = response.json()
+
+with open("public/data/henry_hub_monthly.csv", "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(["period", "price_per_mmbtu", "product"])
+    for row in data["response"]["data"]:
+        writer.writerow([row["period"], row["value"], row["series-description"]])
+
+print("Henry Hub data saved.")
