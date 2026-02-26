@@ -59,7 +59,7 @@ export default function BrentCrudeChart() {
             tickFormatter={(val: number) => `$${val}`}
           />
           <Tooltip
-            formatter={(val: number) => [`$${val.toFixed(2)}`, "Price"]}
+            formatter={(val: number | undefined) => val !== undefined ? [`$${val.toFixed(2)}`, "Price"] : ["", "Price"]}
           />
           <Line
             type="monotone"
