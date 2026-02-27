@@ -13,3 +13,7 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+.nav-link:hover {
+  background: #5c588b14;
+}

@@ -95,6 +95,7 @@ export default function Navigation() {
             <Link
               key={link.href}
               href={link.href}
+              className="nav-link"
               style={{
                 padding: "6px 14px",
                 fontSize: "13px",
