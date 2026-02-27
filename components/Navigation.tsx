@@ -53,7 +53,6 @@ function ThemeToggle() {
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
   { href: "/profiles", label: "Profiles" },
   { href: "/trackers", label: "Trackers" },
   { href: "/blog", label: "Blog" },
