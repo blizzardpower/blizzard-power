@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTheme } from "@/app/providers";
 import { getSectorColor, generateSparkline } from "@/lib/theme";
 import { StatCard, SectorTag, Sparkline, Footer } from "@/components/ui";
+import { useState, useEffect } from "react";
 
 const stats = [
   { label: "Avg. Residential Electricity Rate", value: "16.2", unit: "\u00A2/kWh", change: 3.1, sector: "Residential", trend: "up" as const },
@@ -36,14 +37,44 @@ const sectors = [
 
 export default function HomePage() {
   const { theme, t } = useTheme();
+  const [henryHub, setHenryHub] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
+
+  useEffect(() => {
+    fetch("/data/henry_hub_monthly.csv")
+      .then((r) => r.text())
+      .then((text) => {
+        const rows = text.trim().split("\n").slice(1); // skip header
+        const prices = rows.map((row) => parseFloat(row.split(",")[1])).reverse(); // oldest → newest
+        const latest = prices[prices.length - 1];
+        const prev = prices[prices.length - 2];
+        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
+        setHenryHub({
+          value: latest.toFixed(2),
+          change,
+          sparkData: prices.slice(-20), // last 20 months
+        });
+      });
+  }, []);
+
+  const displayStats = stats.map((s) => {
+    if (s.label === "Nat Gas Henry Hub Spot" && henryHub) {
+      return {
+        ...s,
+        value: henryHub.value,
+        change: henryHub.change,
+        sparkData: henryHub.sparkData,
+      };
+    }
+    return { ...s, sparkData: generateSparkline(20, s.trend) };
+  });
 
   return (
     <div style={{ padding: "0 40px" }}>
       <div style={{ paddingTop: "50px", paddingBottom: "48px" }} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "56px" }}>
-        {stats.map((s) => (
-          <StatCard key={s.label} label={s.label} value={s.value} unit={s.unit} change={s.change} sparkData={generateSparkline(20, s.trend)} color={getSectorColor(s.sector, theme)} />
+        {displayStats.map((s) => (
+          <StatCard key={s.label} label={s.label} value={s.value} unit={s.unit} change={s.change} sparkData={s.sparkData} color={getSectorColor(s.sector, theme)} />
         ))}
       </div>
 
