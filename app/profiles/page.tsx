@@ -19,6 +19,19 @@ const companies = [
       hq: "Cambridge, MA",
     },
   },
+  {
+    name: "Rivian Automotive",
+    ticker: "NASDAQ: RIVN",
+    sector: "Transportation",
+    slug: "rivian",
+    desc: "Electric vehicle manufacturer producing adventure-oriented consumer trucks and SUVs alongside commercial delivery vans. Preparing to launch the mass-market R2 midsize SUV in 2026.",
+    stats: {
+      revenue: "$5.4B",
+      "market cap": "~$19B",
+      employees: "~15,200",
+      hq: "Irvine, CA",
+    },
+  },
 ];
 
 export default function ProfilesPage() {
