@@ -21,10 +21,10 @@ const blogPosts = [
 ];
 
 const profiles = [
-  { name: "NextEra Energy", sector: "Power", metric: "Capacity: 33 GW", trend: "up" as const },
-  { name: "Carrier Global", sector: "Residential", metric: "Rev: $22.1B", trend: "up" as const },
-  { name: "Nucor Corporation", sector: "Industry", metric: "Output: 21.3Mt", trend: "down" as const },
-  { name: "Rivian Automotive", sector: "Transportation", metric: "Deliveries: 62K", trend: "up" as const },
+  { name: "NextEra Energy", sector: "Power", metric: "Capacity: 73 GW", trend: "up" as const },
+  { name: "GE Vernova", sector: "Power", metric: "Rev: $38.1B", trend: "up" as const },
+  { name: "Tesla", sector: "Transportation", metric: "Rev: $94.8B", trend: "down" as const },
+  { name: "Rivian Automotive", sector: "Transportation", metric: "Deliveries: 51.6K", trend: "up" as const },
 ];
 
 const sectors = [
@@ -40,30 +40,26 @@ export default function HomePage() {
   const [henryHub, setHenryHub] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
 
   useEffect(() => {
-    fetch("/data/henry_hub_monthly.csv")
-      .then((r) => r.text())
-      .then((text) => {
-        const rows = text.trim().split("\n").slice(1); // skip header
-        const prices = rows.map((row) => parseFloat(row.split(",")[1])).reverse(); // oldest → newest
+    fetch("/api/prices/henry-hub")
+      .then((r) => r.json())
+      .then((json) => {
+        const prices = json.data
+          .map((r: { period: string; price: number }) => r.price)
+          .reverse(); // oldest → newest
         const latest = prices[prices.length - 1];
         const prev = prices[prices.length - 2];
         const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
         setHenryHub({
           value: latest.toFixed(2),
           change,
-          sparkData: prices.slice(-20), // last 20 months
+          sparkData: prices.slice(-60), // last 60 trading days
         });
       });
   }, []);
 
   const displayStats = stats.map((s) => {
     if (s.label === "Nat Gas Henry Hub Spot" && henryHub) {
-      return {
-        ...s,
-        value: henryHub.value,
-        change: henryHub.change,
-        sparkData: henryHub.sparkData,
-      };
+      return { ...s, value: henryHub.value, change: henryHub.change, sparkData: henryHub.sparkData };
     }
     return { ...s, sparkData: generateSparkline(20, s.trend) };
   });

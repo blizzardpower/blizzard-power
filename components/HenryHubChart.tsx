@@ -10,7 +10,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import Papa from "papaparse";
 
 interface PriceRow {
   period: string;
@@ -19,23 +18,21 @@ interface PriceRow {
 
 export default function HenryHubChart() {
   const [data, setData] = useState<PriceRow[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
 
   useEffect(() => {
-    fetch("/data/henry_hub_monthly.csv")
-      .then((res) => res.text())
-      .then((csv) => {
-        const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
-        const rows = parsed.data as { period: string; price_per_mmbtu: string }[];
-
-        const formatted = rows
-          .map((row) => ({
+    fetch("/api/prices/henry-hub")
+      .then((res) => res.json())
+      .then((json) => {
+        const formatted = json.data
+          .map((row: { period: string; price: number }) => ({
             period: row.period,
-            price_per_mmbtu: parseFloat(row.price_per_mmbtu),
+            price_per_mmbtu: row.price,
           }))
-          .filter((row) => !isNaN(row.price_per_mmbtu))
-          .sort((a, b) => a.period.localeCompare(b.period));
+          .sort((a: PriceRow, b: PriceRow) => a.period.localeCompare(b.period));
 
         setData(formatted);
+        setLastUpdated(json.lastUpdated || "");
       });
   }, []);
 
@@ -44,7 +41,7 @@ export default function HenryHubChart() {
   return (
     <div className="w-full">
       <h3 className="text-lg font-semibold mb-4">
-        Henry Hub Natural Gas — Monthly Spot Price ($/MMBtu)
+        Henry Hub Natural Gas — Daily Spot Price ($/MMBtu)
       </h3>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={data}>
@@ -59,7 +56,11 @@ export default function HenryHubChart() {
             tickFormatter={(val: number) => `$${val}`}
           />
           <Tooltip
-            formatter={(val: number | undefined) => val !== undefined ? [`$${val.toFixed(2)}`, "Price"] : ["", "Price"]}
+            formatter={(val: number | undefined) =>
+              val !== undefined
+                ? [`$${val.toFixed(2)}`, "Price"]
+                : ["", "Price"]
+            }
           />
           <Line
             type="monotone"
@@ -71,7 +72,8 @@ export default function HenryHubChart() {
         </LineChart>
       </ResponsiveContainer>
       <p className="text-xs text-gray-500 mt-2">
-        Source: U.S. Energy Information Administration | Data as of {data[data.length - 1]?.period}
+        Source: U.S. Energy Information Administration | Last updated:{" "}
+        {lastUpdated} | Daily frequency, cached 24hrs
       </p>
     </div>
   );
