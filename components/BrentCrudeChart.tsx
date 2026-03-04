@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -16,6 +16,17 @@ interface PriceRow {
   price_per_barrel: number;
 }
 
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function periodToLabel(period: string): string {
+  const parts = period.split("-");
+  const monthIndex = parseInt(parts[1], 10) - 1;
+  return `${MONTH_NAMES[monthIndex]} ${parts[0]}`;
+}
+
 export default function BrentCrudeChart() {
   const [data, setData] = useState<PriceRow[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>("");
@@ -24,7 +35,7 @@ export default function BrentCrudeChart() {
     fetch("/api/prices/brent-crude")
       .then((res) => res.json())
       .then((json) => {
-        const formatted = json.data
+        const formatted: PriceRow[] = json.data
           .map((row: { period: string; price: number }) => ({
             period: row.period,
             price_per_barrel: row.price,
@@ -36,6 +47,19 @@ export default function BrentCrudeChart() {
       });
   }, []);
 
+  const monthlyTicks = useMemo(() => {
+    const seen = new Set<string>();
+    const ticks: string[] = [];
+    for (const row of data) {
+      const monthKey = row.period.substring(0, 7);
+      if (!seen.has(monthKey)) {
+        seen.add(monthKey);
+        ticks.push(row.period);
+      }
+    }
+    return ticks.filter((_, i) => i % 3 === 0);
+  }, [data]);
+
   if (data.length === 0) return <p>Loading chart...</p>;
 
   return (
@@ -45,17 +69,21 @@ export default function BrentCrudeChart() {
       </h3>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="period"
-            tick={{ fontSize: 12 }}
-            interval={Math.floor(data.length / 8)}
+            ticks={monthlyTicks}
+            tickFormatter={(value: string) => periodToLabel(value)}
+            tick={{ fontSize: 11 }}
+            tickLine={false}
+            axisLine={{ stroke: "#ccc" }}
           />
           <YAxis
             tick={{ fontSize: 12 }}
             tickFormatter={(val: number) => `$${val}`}
           />
           <Tooltip
+            labelFormatter={(value: string) => periodToLabel(value)}
             formatter={(val: number | undefined) =>
               val !== undefined
                 ? [`$${val.toFixed(2)}`, "Price"]
