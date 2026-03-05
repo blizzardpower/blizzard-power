@@ -70,7 +70,7 @@ export default function HenryHubChart() {
         Henry Hub Natural Gas — Daily Spot Price ($/MMBtu)
       </h3>
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={data}>
+        <LineChart data={data} margin={{ top: 5, right: 40, bottom: 5, left: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="period"
@@ -103,7 +103,7 @@ export default function HenryHubChart() {
       </ResponsiveContainer>
       <p className="text-xs text-gray-500 mt-2">
         Source: U.S. Energy Information Administration | Last updated:{" "}
-        {lastUpdated} | Daily frequency, cached 24hrs
+        {lastUpdated}
       </p>
     </div>
   );
