@@ -3,21 +3,20 @@
 import Link from "next/link";
 import { useTheme } from "@/app/providers";
 import { getSectorColor, generateSparkline } from "@/lib/theme";
-import { StatCard, SectorTag, Sparkline } from "@/components/ui";
+import { StatCard, SectorTag } from "@/components/ui";
 import { useState, useEffect } from "react";
 
 const blogPosts = [
   { title: "Industrial Heat Decarbonization: Where the Economics Actually Stand", sector: "Industry", date: "Feb 18, 2026", read: "8 min" },
   { title: "Residential Heat Pump Adoption Rates Are Slowing \u2014 Here's the Data", sector: "Residential", date: "Feb 14, 2026", read: "6 min" },
   { title: "The Real Cost of Transmission Buildout for Renewable Integration", sector: "Power", date: "Feb 10, 2026", read: "11 min" },
-  { title: "EV Charging Infrastructure: A County-Level Utilization Analysis", sector: "Transportation", date: "Feb 5, 2026", read: "9 min" },
 ];
 
 const profiles = [
-  { name: "NextEra Energy", sector: "Power", metric: "Capacity: 73 GW", trend: "up" as const, slug: "nextera-energy" },
-  { name: "GE Vernova", sector: "Power", metric: "Rev: $38.1B", trend: "up" as const, slug: "ge-vernova" },
-  { name: "Tesla", sector: "Transportation", metric: "Rev: $94.8B", trend: "down" as const, slug: "tesla" },
-  { name: "Rivian Automotive", sector: "Transportation", metric: "Deliveries: 51.6K", trend: "up" as const, slug: "rivian" },
+  { name: "NextEra Energy", sector: "Power", metric: "Rev: $24.8B", slug: "nextera-energy" },
+  { name: "GE Vernova", sector: "Power", metric: "Rev: $38.1B", slug: "ge-vernova" },
+  { name: "Tesla", sector: "Transportation", metric: "Rev: $94.8B", slug: "tesla" },
+  { name: "Rivian Automotive", sector: "Transportation", metric: "Rev: $5.4B", slug: "rivian" },
 ];
 
 const placeholderStats = [
@@ -68,11 +67,10 @@ export default function HomePage() {
       });
   }, []);
 
-  // Build the 8-card grid: Henry Hub + Brent Crude (live, clickable) + 6 placeholders
-  const row1 = [
+  const allCards = [
     {
       label: "Nat Gas Henry Hub Spot",
-      value: henryHub?.value ?? "—",
+      value: henryHub?.value ?? "\u2014",
       unit: "$/MMBtu",
       change: henryHub?.change ?? 0,
       sector: "Power",
@@ -81,73 +79,23 @@ export default function HomePage() {
     },
     {
       label: "Brent Crude Oil Spot",
-      value: brentCrude?.value ?? "—",
+      value: brentCrude?.value ?? "\u2014",
       unit: "$/barrel",
       change: brentCrude?.change ?? 0,
       sector: "Power",
       sparkData: brentCrude?.sparkData ?? generateSparkline(20, "down"),
       href: "/trackers",
     },
-    {
-      label: placeholderStats[0].label,
-      value: placeholderStats[0].value,
-      unit: placeholderStats[0].unit,
-      change: placeholderStats[0].change,
-      sector: placeholderStats[0].sector,
-      sparkData: generateSparkline(20, placeholderStats[0].trend),
-      href: null,
-    },
-    {
-      label: placeholderStats[1].label,
-      value: placeholderStats[1].value,
-      unit: placeholderStats[1].unit,
-      change: placeholderStats[1].change,
-      sector: placeholderStats[1].sector,
-      sparkData: generateSparkline(20, placeholderStats[1].trend),
-      href: null,
-    },
+    ...placeholderStats.map((s) => ({
+      label: s.label,
+      value: s.value,
+      unit: s.unit,
+      change: s.change,
+      sector: s.sector,
+      sparkData: generateSparkline(20, s.trend),
+      href: null as string | null,
+    })),
   ];
-
-  const row2 = [
-    {
-      label: placeholderStats[2].label,
-      value: placeholderStats[2].value,
-      unit: placeholderStats[2].unit,
-      change: placeholderStats[2].change,
-      sector: placeholderStats[2].sector,
-      sparkData: generateSparkline(20, placeholderStats[2].trend),
-      href: null,
-    },
-    {
-      label: placeholderStats[3].label,
-      value: placeholderStats[3].value,
-      unit: placeholderStats[3].unit,
-      change: placeholderStats[3].change,
-      sector: placeholderStats[3].sector,
-      sparkData: generateSparkline(20, placeholderStats[3].trend),
-      href: null,
-    },
-    {
-      label: placeholderStats[4].label,
-      value: placeholderStats[4].value,
-      unit: placeholderStats[4].unit,
-      change: placeholderStats[4].change,
-      sector: placeholderStats[4].sector,
-      sparkData: generateSparkline(20, placeholderStats[4].trend),
-      href: null,
-    },
-    {
-      label: placeholderStats[5].label,
-      value: placeholderStats[5].value,
-      unit: placeholderStats[5].unit,
-      change: placeholderStats[5].change,
-      sector: placeholderStats[5].sector,
-      sparkData: generateSparkline(20, placeholderStats[5].trend),
-      href: null,
-    },
-  ];
-
-  const allCards = [...row1, ...row2];
 
   return (
     <div style={{ padding: "0 40px" }}>
@@ -177,15 +125,15 @@ export default function HomePage() {
         })}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "32px", marginBottom: "64px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: "32px", alignItems: "start", marginBottom: "64px" }}>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h2 style={{ fontSize: "16px", fontWeight: 600, color: t.text }}>Latest Analysis</h2>
             <Link href="/blog" style={{ fontSize: "12px", color: t.accent }}>View all →</Link>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {blogPosts.map((post, i) => (
-              <div key={i} style={{ padding: "18px 20px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: i === 0 ? "6px 6px 0 0" : i === blogPosts.length - 1 ? "0 0 6px 6px" : "0", cursor: "pointer", transition: "background 0.2s" }}>
+              <div key={i} style={{ padding: "18px 20px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", transition: "background 0.2s" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
                   <SectorTag sector={post.sector} />
                   <span style={{ fontSize: "11px", color: t.textDim }}>{post.date}</span>
@@ -203,27 +151,18 @@ export default function HomePage() {
             <h2 style={{ fontSize: "16px", fontWeight: 600, color: t.text }}>Company Profiles</h2>
             <Link href="/profiles" style={{ fontSize: "12px", color: t.accent }}>Browse all →</Link>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {profiles.map((p, i) => (
               <Link key={i} href={`/profiles/${p.slug}`} style={{ textDecoration: "none" }}>
-                <div style={{ padding: "16px 18px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "border-color 0.2s" }}>
-                  <div>
-                    <div style={{ fontSize: "14px", fontWeight: 600, color: t.text, marginBottom: "6px" }}>{p.name}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <SectorTag sector={p.sector} />
-                      <span style={{ fontSize: "12px", color: t.textMuted }}>{p.metric}</span>
-                    </div>
+                <div style={{ padding: "16px 18px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", transition: "border-color 0.2s" }}>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: t.text, marginBottom: "6px" }}>{p.name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <SectorTag sector={p.sector} />
+                    <span style={{ fontSize: "12px", color: t.textMuted }}>{p.metric}</span>
                   </div>
-                  <Sparkline data={generateSparkline(12, p.trend)} color={getSectorColor(p.sector, theme)} width={64} height={24} />
                 </div>
               </Link>
             ))}
-          </div>
-
-          <div style={{ marginTop: "20px", padding: "20px", background: `${t.accent}0c`, border: `1px solid ${t.accent}33`, borderRadius: "6px" }}>
-            <div style={{ fontSize: "13px", fontWeight: 600, color: t.accent, marginBottom: "6px" }}>{"\uD83D\uDCCA"} Data Trackers</div>
-            <div style={{ fontSize: "13px", color: t.textMuted, lineHeight: 1.55 }}>Interactive dashboards for electricity rates, generation mix, EV adoption, industrial output, and more.</div>
-            <Link href="/trackers" style={{ marginTop: "12px", display: "inline-block", padding: "6px 14px", fontSize: "12px", fontWeight: 600, color: theme === "dark" ? "#0a0e14" : "#ffffff", background: t.accent, borderRadius: "4px" }}>Explore Trackers →</Link>
           </div>
         </div>
       </div>
