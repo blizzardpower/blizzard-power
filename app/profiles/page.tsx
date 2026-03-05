@@ -63,9 +63,6 @@ export default function ProfilesPage() {
     <div style={{ padding: "100px 40px 40px" }}>
       <div style={{ marginBottom: "32px" }}>
         <h1 style={{ fontSize: "28px", fontWeight: 700, color: t.text }}>Company Profiles</h1>
-        <p style={{ fontSize: "14px", color: t.textMuted, marginTop: "8px" }}>
-          Data-driven profiles of firms across energy sectors. Financial data from latest public filings.
-        </p>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
         {companies.map((c, i) => (
