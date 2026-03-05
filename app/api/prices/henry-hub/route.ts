@@ -12,7 +12,7 @@ export async function GET() {
   url.searchParams.set("facets[series][]", "RNGWHHD");
   url.searchParams.set("sort[0][column]", "period");
   url.searchParams.set("sort[0][direction]", "desc");
-  url.searchParams.set("length", "365");
+  url.searchParams.set("length", "1260");
 
   const res = await fetch(url.toString(), { next: { revalidate: 86400 } });
   const json = await res.json();
