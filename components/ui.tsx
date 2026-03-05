@@ -102,11 +102,9 @@ export function Footer() {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: "40px",
       }}
     >
-      <span style={{ fontSize: "12px", color: t.textDim, fontFamily: "'Space Mono', monospace" }}>{"\u00A9"} 2026 Blizzard Power</span>
-      <span style={{ fontSize: "11px", color: t.textDim }}>Data sourced from EIA, IEA, FRED, EPA, and public filings. Not financial advice.</span>
+      <span style={{ fontSize: "12px", color: t.textDim, fontFamily: "'Space Mono', monospace" }}>{"\u00A9"} {new Date().getFullYear()} Blizzard Power</span>
     </div>
   );
 }

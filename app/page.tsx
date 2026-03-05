@@ -3,15 +3,8 @@
 import Link from "next/link";
 import { useTheme } from "@/app/providers";
 import { getSectorColor, generateSparkline } from "@/lib/theme";
-import { StatCard, SectorTag, Sparkline, Footer } from "@/components/ui";
+import { StatCard, SectorTag, Sparkline } from "@/components/ui";
 import { useState, useEffect } from "react";
-
-const stats = [
-  { label: "Avg. Residential Electricity Rate", value: "16.2", unit: "\u00A2/kWh", change: 3.1, sector: "Residential", trend: "up" as const },
-  { label: "U.S. Grid Generation", value: "4,178", unit: "TWh", change: 1.4, sector: "Power", trend: "up" as const },
-  { label: "Nat Gas Henry Hub Spot", value: "2.84", unit: "$/MMBtu", change: -5.2, sector: "Power", trend: "down" as const },
-  { label: "EV Share of New Sales", value: "11.3", unit: "%", change: 2.8, sector: "Transportation", trend: "up" as const },
-];
 
 const blogPosts = [
   { title: "Industrial Heat Decarbonization: Where the Economics Actually Stand", sector: "Industry", date: "Feb 18, 2026", read: "8 min" },
@@ -21,23 +14,25 @@ const blogPosts = [
 ];
 
 const profiles = [
-  { name: "NextEra Energy", sector: "Power", metric: "Capacity: 73 GW", trend: "up" as const },
-  { name: "GE Vernova", sector: "Power", metric: "Rev: $38.1B", trend: "up" as const },
-  { name: "Tesla", sector: "Transportation", metric: "Rev: $94.8B", trend: "down" as const },
-  { name: "Rivian Automotive", sector: "Transportation", metric: "Deliveries: 51.6K", trend: "up" as const },
+  { name: "NextEra Energy", sector: "Power", metric: "Capacity: 73 GW", trend: "up" as const, slug: "nextera-energy" },
+  { name: "GE Vernova", sector: "Power", metric: "Rev: $38.1B", trend: "up" as const, slug: "ge-vernova" },
+  { name: "Tesla", sector: "Transportation", metric: "Rev: $94.8B", trend: "down" as const, slug: "tesla" },
+  { name: "Rivian Automotive", sector: "Transportation", metric: "Deliveries: 51.6K", trend: "up" as const, slug: "rivian" },
 ];
 
-const sectors = [
-  { name: "Residential", desc: "Heating, cooling, efficiency, rates, weatherization", icon: "\uD83C\uDFE0" },
-  { name: "Power", desc: "Generation, T&D, grid ops, capacity markets", icon: "\u26A1" },
-  { name: "Transportation", desc: "EVs, AVs, fuel markets, fleet economics", icon: "\uD83D\uDE97" },
-  { name: "Agriculture", desc: "Energy inputs, irrigation, rural electrification", icon: "\uD83C\uDF3E" },
-  { name: "Industry", desc: "Glass, steel, manufacturing, process heat", icon: "\uD83C\uDFED" },
+const placeholderStats = [
+  { label: "Avg. Residential Electricity Rate", value: "16.2", unit: "\u00A2/kWh", change: 3.1, sector: "Residential", trend: "up" as const },
+  { label: "U.S. Grid Generation", value: "4,178", unit: "TWh", change: 1.4, sector: "Power", trend: "up" as const },
+  { label: "EV Share of New Sales", value: "11.3", unit: "%", change: 2.8, sector: "Transportation", trend: "up" as const },
+  { label: "U.S. Coal Production", value: "432", unit: "Mt", change: -6.1, sector: "Industry", trend: "down" as const },
+  { label: "Solar Installed Capacity", value: "211", unit: "GW", change: 22.4, sector: "Power", trend: "up" as const },
+  { label: "Farm Diesel Price", value: "3.64", unit: "$/gal", change: -4.8, sector: "Agriculture", trend: "down" as const },
 ];
 
 export default function HomePage() {
   const { theme, t } = useTheme();
   const [henryHub, setHenryHub] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
+  const [brentCrude, setBrentCrude] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
 
   useEffect(() => {
     fetch("/api/prices/henry-hub")
@@ -45,33 +40,141 @@ export default function HomePage() {
       .then((json) => {
         const prices = json.data
           .map((r: { period: string; price: number }) => r.price)
-          .reverse(); // oldest → newest
+          .reverse();
         const latest = prices[prices.length - 1];
         const prev = prices[prices.length - 2];
         const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
         setHenryHub({
           value: latest.toFixed(2),
           change,
-          sparkData: prices.slice(-60), // last 60 trading days
+          sparkData: prices.slice(-60),
+        });
+      });
+
+    fetch("/api/prices/brent-crude")
+      .then((r) => r.json())
+      .then((json) => {
+        const prices = json.data
+          .map((r: { period: string; price: number }) => r.price)
+          .reverse();
+        const latest = prices[prices.length - 1];
+        const prev = prices[prices.length - 2];
+        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
+        setBrentCrude({
+          value: latest.toFixed(2),
+          change,
+          sparkData: prices.slice(-60),
         });
       });
   }, []);
 
-  const displayStats = stats.map((s) => {
-    if (s.label === "Nat Gas Henry Hub Spot" && henryHub) {
-      return { ...s, value: henryHub.value, change: henryHub.change, sparkData: henryHub.sparkData };
-    }
-    return { ...s, sparkData: generateSparkline(20, s.trend) };
-  });
+  // Build the 8-card grid: Henry Hub + Brent Crude (live, clickable) + 6 placeholders
+  const row1 = [
+    {
+      label: "Nat Gas Henry Hub Spot",
+      value: henryHub?.value ?? "—",
+      unit: "$/MMBtu",
+      change: henryHub?.change ?? 0,
+      sector: "Power",
+      sparkData: henryHub?.sparkData ?? generateSparkline(20, "down"),
+      href: "/trackers",
+    },
+    {
+      label: "Brent Crude Oil Spot",
+      value: brentCrude?.value ?? "—",
+      unit: "$/barrel",
+      change: brentCrude?.change ?? 0,
+      sector: "Power",
+      sparkData: brentCrude?.sparkData ?? generateSparkline(20, "down"),
+      href: "/trackers",
+    },
+    {
+      label: placeholderStats[0].label,
+      value: placeholderStats[0].value,
+      unit: placeholderStats[0].unit,
+      change: placeholderStats[0].change,
+      sector: placeholderStats[0].sector,
+      sparkData: generateSparkline(20, placeholderStats[0].trend),
+      href: null,
+    },
+    {
+      label: placeholderStats[1].label,
+      value: placeholderStats[1].value,
+      unit: placeholderStats[1].unit,
+      change: placeholderStats[1].change,
+      sector: placeholderStats[1].sector,
+      sparkData: generateSparkline(20, placeholderStats[1].trend),
+      href: null,
+    },
+  ];
+
+  const row2 = [
+    {
+      label: placeholderStats[2].label,
+      value: placeholderStats[2].value,
+      unit: placeholderStats[2].unit,
+      change: placeholderStats[2].change,
+      sector: placeholderStats[2].sector,
+      sparkData: generateSparkline(20, placeholderStats[2].trend),
+      href: null,
+    },
+    {
+      label: placeholderStats[3].label,
+      value: placeholderStats[3].value,
+      unit: placeholderStats[3].unit,
+      change: placeholderStats[3].change,
+      sector: placeholderStats[3].sector,
+      sparkData: generateSparkline(20, placeholderStats[3].trend),
+      href: null,
+    },
+    {
+      label: placeholderStats[4].label,
+      value: placeholderStats[4].value,
+      unit: placeholderStats[4].unit,
+      change: placeholderStats[4].change,
+      sector: placeholderStats[4].sector,
+      sparkData: generateSparkline(20, placeholderStats[4].trend),
+      href: null,
+    },
+    {
+      label: placeholderStats[5].label,
+      value: placeholderStats[5].value,
+      unit: placeholderStats[5].unit,
+      change: placeholderStats[5].change,
+      sector: placeholderStats[5].sector,
+      sparkData: generateSparkline(20, placeholderStats[5].trend),
+      href: null,
+    },
+  ];
+
+  const allCards = [...row1, ...row2];
 
   return (
     <div style={{ padding: "0 40px" }}>
       <div style={{ paddingTop: "50px", paddingBottom: "48px" }} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "56px" }}>
-        {displayStats.map((s) => (
-          <StatCard key={s.label} label={s.label} value={s.value} unit={s.unit} change={s.change} sparkData={s.sparkData} color={getSectorColor(s.sector, theme)} />
-        ))}
+        {allCards.map((s) => {
+          const card = (
+            <StatCard
+              key={s.label}
+              label={s.label}
+              value={s.value}
+              unit={s.unit}
+              change={s.change}
+              sparkData={s.sparkData}
+              color={getSectorColor(s.sector, theme)}
+            />
+          );
+          if (s.href) {
+            return (
+              <Link key={s.label} href={s.href} style={{ textDecoration: "none" }}>
+                {card}
+              </Link>
+            );
+          }
+          return card;
+        })}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "32px", marginBottom: "64px" }}>
@@ -102,16 +205,18 @@ export default function HomePage() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {profiles.map((p, i) => (
-              <div key={i} style={{ padding: "16px 18px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "border-color 0.2s" }}>
-                <div>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: t.text, marginBottom: "6px" }}>{p.name}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <SectorTag sector={p.sector} />
-                    <span style={{ fontSize: "12px", color: t.textMuted }}>{p.metric}</span>
+              <Link key={i} href={`/profiles/${p.slug}`} style={{ textDecoration: "none" }}>
+                <div style={{ padding: "16px 18px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "border-color 0.2s" }}>
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: t.text, marginBottom: "6px" }}>{p.name}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <SectorTag sector={p.sector} />
+                      <span style={{ fontSize: "12px", color: t.textMuted }}>{p.metric}</span>
+                    </div>
                   </div>
+                  <Sparkline data={generateSparkline(12, p.trend)} color={getSectorColor(p.sector, theme)} width={64} height={24} />
                 </div>
-                <Sparkline data={generateSparkline(12, p.trend)} color={getSectorColor(p.sector, theme)} width={64} height={24} />
-              </div>
+              </Link>
             ))}
           </div>
 
@@ -123,20 +228,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div style={{ marginBottom: "64px" }}>
-        <h2 style={{ fontSize: "16px", fontWeight: 600, color: t.text, marginBottom: "20px" }}>Coverage Areas</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
-          {sectors.map((sector) => (
-            <div key={sector.name} style={{ padding: "20px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", transition: "all 0.2s", borderTop: `2px solid ${getSectorColor(sector.name, theme)}` }}>
-              <div style={{ fontSize: "24px", marginBottom: "10px" }}>{sector.icon}</div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: t.text, marginBottom: "6px" }}>{sector.name}</div>
-              <div style={{ fontSize: "12px", color: t.textMuted, lineHeight: 1.5 }}>{sector.desc}</div>
-            </div>
-          ))}
-        </div>
+      <div style={{ borderTop: `1px solid ${t.border}`, padding: "24px 0", display: "flex", justifyContent: "flex-start", alignItems: "center" }}>
+        <span style={{ fontSize: "12px", color: t.textDim, fontFamily: "'Space Mono', monospace" }}>{"\u00A9"} {new Date().getFullYear()} Blizzard Power</span>
       </div>
-
-      <Footer />
     </div>
   );
 }
