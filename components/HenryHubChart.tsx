@@ -66,7 +66,7 @@ export default function HenryHubChart() {
 
   return (
     <div className="w-full">
-      <h3 className="text-lg font-semibold mb-4">
+      <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "12px" }}>
         Henry Hub Natural Gas — Daily Spot Price ($/MMBtu)
       </h3>
       <ResponsiveContainer width="100%" height={400}>
@@ -85,7 +85,10 @@ export default function HenryHubChart() {
             tickFormatter={(val: number) => `$${val}`}
           />
           <Tooltip
-            labelFormatter={(value) => periodToLabel(String(value))}
+            labelFormatter={(value) => {
+              const d = new Date(String(value) + "T00:00:00");
+              return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+            }}
             formatter={(val: number | undefined) =>
               val !== undefined
                 ? [`$${val.toFixed(2)}`, "Price"]
@@ -101,7 +104,7 @@ export default function HenryHubChart() {
           />
         </LineChart>
       </ResponsiveContainer>
-      <p className="text-xs text-gray-500 mt-2">
+      <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
         Source: U.S. Energy Information Administration | Last updated:{" "}
         {lastUpdated}
       </p>
