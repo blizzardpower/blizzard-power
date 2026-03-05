@@ -85,7 +85,7 @@ export default function HenryHubChart() {
             tickFormatter={(val: number) => `$${val}`}
           />
           <Tooltip
-            labelFormatter={(value: string) => periodToLabel(value)}
+            labelFormatter={(value) => periodToLabel(String(value))}
             formatter={(val: number | undefined) =>
               val !== undefined
                 ? [`$${val.toFixed(2)}`, "Price"]
