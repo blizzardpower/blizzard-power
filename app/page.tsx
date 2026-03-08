@@ -119,7 +119,7 @@ export default function HomePage() {
       change: elecDemand?.change ?? 0,
       sector: "Power",
       sparkData: elecDemand?.sparkData ?? generateSparkline(20, "up"),
-      href: null,
+      href: "/trackers",
     },
     {
       label: "Avg. Residential Elec. Rate",
@@ -128,7 +128,7 @@ export default function HomePage() {
       change: resRate?.change ?? 0,
       sector: "Residential",
       sparkData: resRate?.sparkData ?? generateSparkline(20, "up"),
-      href: null,
+      href: "/trackers",
     },
     ...placeholderStats.map((s) => ({
       label: s.label,
