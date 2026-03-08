@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "@/app/providers";
-import BrentCrudeChart from "@/components/BrentCrudeChart";
+import WtiCrudeChart from "@/components/WtiCrudeChart";
 import HenryHubChart from "@/components/HenryHubChart";
 
 export default function TrackersPage() {
@@ -15,7 +15,7 @@ export default function TrackersPage() {
 
       <div className="grid-trackers">
         <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", padding: "24px" }}>
-          <BrentCrudeChart />
+          <WtiCrudeChart />
         </div>
 
         <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", padding: "24px" }}>

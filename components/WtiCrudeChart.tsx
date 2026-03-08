@@ -20,12 +20,12 @@ function periodToLabel(period: string): string {
   return period.substring(0, 4);
 }
 
-export default function BrentCrudeChart() {
+export default function WtiCrudeChart() {
   const [data, setData] = useState<PriceRow[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
   useEffect(() => {
-    fetch("/api/prices/brent-crude")
+    fetch("/api/prices/wti-crude")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -62,7 +62,7 @@ export default function BrentCrudeChart() {
   return (
     <div>
       <h3 style={{ fontSize: "18px", fontWeight: 600, marginBottom: "24px" }}>
-        Brent Crude Oil — Daily Spot Price ($/barrel)
+        WTI Crude Oil — Daily Spot Price ($/barrel)
       </h3>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={data} margin={{ top: 5, right: 40, bottom: 5, left: 5 }}>

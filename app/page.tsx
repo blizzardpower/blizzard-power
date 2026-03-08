@@ -20,54 +20,80 @@ const profiles = [
 ];
 
 const placeholderStats = [
-  { label: "Avg. Residential Electricity Rate", value: "16.2", unit: "\u00A2/kWh", change: 3.1, sector: "Residential", trend: "up" as const },
-  { label: "U.S. Grid Generation", value: "4,178", unit: "TWh", change: 1.4, sector: "Power", trend: "up" as const },
   { label: "EV Share of New Sales", value: "11.3", unit: "%", change: 2.8, sector: "Transportation", trend: "up" as const },
   { label: "U.S. Coal Production", value: "432", unit: "Mt", change: -6.1, sector: "Industry", trend: "down" as const },
   { label: "Solar Installed Capacity", value: "211", unit: "GW", change: 22.4, sector: "Power", trend: "up" as const },
-  { label: "Farm Diesel Price", value: "3.64", unit: "$/gal", change: -4.8, sector: "Agriculture", trend: "down" as const },
+  { label: "Transmission Buildout", value: "—", unit: "GW-mi", change: 0, sector: "Power", trend: "up" as const },
 ];
+
+interface LiveCard {
+  label: string;
+  value: string;
+  unit: string;
+  change: number;
+  sector: string;
+  sparkData: number[];
+  href: string | null;
+}
 
 export default function HomePage() {
   const { theme, t } = useTheme();
   const [henryHub, setHenryHub] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
-  const [brentCrude, setBrentCrude] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
+  const [wtiCrude, setWtiCrude] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
+  const [elecDemand, setElecDemand] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
+  const [resRate, setResRate] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
 
   useEffect(() => {
+    // Henry Hub
     fetch("/api/prices/henry-hub")
       .then((r) => r.json())
       .then((json) => {
-        const prices = json.data
-          .map((r: { period: string; price: number }) => r.price)
-          .reverse();
+        const prices = json.data.map((r: { price: number }) => r.price).reverse();
         const latest = prices[prices.length - 1];
         const prev = prices[prices.length - 2];
         const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
-        setHenryHub({
-          value: latest.toFixed(2),
-          change,
-          sparkData: prices.slice(-60),
-        });
-      });
+        setHenryHub({ value: latest.toFixed(2), change, sparkData: prices.slice(-60) });
+      })
+      .catch((err) => console.error("Henry Hub error:", err));
 
-    fetch("/api/prices/brent-crude")
+    // WTI Crude
+    fetch("/api/prices/wti-crude")
       .then((r) => r.json())
       .then((json) => {
-        const prices = json.data
-          .map((r: { period: string; price: number }) => r.price)
-          .reverse();
+        const prices = json.data.map((r: { price: number }) => r.price).reverse();
         const latest = prices[prices.length - 1];
         const prev = prices[prices.length - 2];
         const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
-        setBrentCrude({
-          value: latest.toFixed(2),
-          change,
-          sparkData: prices.slice(-60),
-        });
-      });
+        setWtiCrude({ value: latest.toFixed(2), change, sparkData: prices.slice(-60) });
+      })
+      .catch((err) => console.error("WTI error:", err));
+
+    // Electricity Demand
+    fetch("/api/prices/electricity-demand")
+      .then((r) => r.json())
+      .then((json) => {
+        const values = json.data.map((r: { value: number }) => r.value).reverse();
+        const latest = values[values.length - 1];
+        const prev = values[values.length - 2];
+        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
+        setElecDemand({ value: latest.toLocaleString(), change, sparkData: values.slice(-60) });
+      })
+      .catch((err) => console.error("Electricity demand error:", err));
+
+    // Residential Rate
+    fetch("/api/prices/residential-rate")
+      .then((r) => r.json())
+      .then((json) => {
+        const prices = json.data.map((r: { price: number }) => r.price).reverse();
+        const latest = prices[prices.length - 1];
+        const prev = prices[prices.length - 2];
+        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
+        setResRate({ value: latest.toFixed(1), change, sparkData: prices.slice(-20) });
+      })
+      .catch((err) => console.error("Residential rate error:", err));
   }, []);
 
-  const allCards = [
+  const allCards: LiveCard[] = [
     {
       label: "Nat Gas Henry Hub Spot",
       value: henryHub?.value ?? "\u2014",
@@ -78,13 +104,31 @@ export default function HomePage() {
       href: "/trackers",
     },
     {
-      label: "Brent Crude Oil Spot",
-      value: brentCrude?.value ?? "\u2014",
+      label: "WTI Crude Oil Spot",
+      value: wtiCrude?.value ?? "\u2014",
       unit: "$/barrel",
-      change: brentCrude?.change ?? 0,
-      sector: "Power",
-      sparkData: brentCrude?.sparkData ?? generateSparkline(20, "down"),
+      change: wtiCrude?.change ?? 0,
+      sector: "Transportation",
+      sparkData: wtiCrude?.sparkData ?? generateSparkline(20, "down"),
       href: "/trackers",
+    },
+    {
+      label: "U.S. Electricity Demand",
+      value: elecDemand?.value ?? "\u2014",
+      unit: "GWh/day",
+      change: elecDemand?.change ?? 0,
+      sector: "Power",
+      sparkData: elecDemand?.sparkData ?? generateSparkline(20, "up"),
+      href: null,
+    },
+    {
+      label: "Avg. Residential Elec. Rate",
+      value: resRate?.value ?? "\u2014",
+      unit: "\u00A2/kWh",
+      change: resRate?.change ?? 0,
+      sector: "Residential",
+      sparkData: resRate?.sparkData ?? generateSparkline(20, "up"),
+      href: null,
     },
     ...placeholderStats.map((s) => ({
       label: s.label,
