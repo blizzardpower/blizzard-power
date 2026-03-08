@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const API_KEY = process.env.EIA_API_KEY;
 
-export const revalidate = 86400; // cache for 24 hours
+export const revalidate = 86400;
 
 export async function GET() {
   const url = new URL("https://api.eia.gov/v2/natural-gas/pri/fut/data/");
@@ -14,13 +14,14 @@ export async function GET() {
   url.searchParams.set("sort[0][direction]", "desc");
   url.searchParams.set("length", "1260");
 
-  const res = await fetch(url.toString(), { next: { revalidate: 86400 } });
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 86400, tags: ["prices-henry-hub"] },
+  });
   const json = await res.json();
 
-  const rows = json.response.data.map((r: any) => ({
-    period: r.period,
-    price: parseFloat(r.value),
-  })).filter((r: any) => !isNaN(r.price));
+  const rows = json.response.data
+    .map((r: any) => ({ period: r.period, price: parseFloat(r.value) }))
+    .filter((r: any) => !isNaN(r.price));
 
   return NextResponse.json({
     series: "Henry Hub Natural Gas Spot Price",

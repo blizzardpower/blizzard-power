@@ -14,13 +14,14 @@ export async function GET() {
   url.searchParams.set("sort[0][direction]", "desc");
   url.searchParams.set("length", "1260");
 
-  const res = await fetch(url.toString(), { next: { revalidate: 86400 } });
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 86400, tags: ["prices-brent-crude"] },
+  });
   const json = await res.json();
 
-  const rows = json.response.data.map((r: any) => ({
-    period: r.period,
-    price: parseFloat(r.value),
-  })).filter((r: any) => !isNaN(r.price));
+  const rows = json.response.data
+    .map((r: any) => ({ period: r.period, price: parseFloat(r.value) }))
+    .filter((r: any) => !isNaN(r.price));
 
   return NextResponse.json({
     series: "Brent Crude Oil Spot Price",
