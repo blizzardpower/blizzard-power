@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const API_KEY = process.env.EIA_API_KEY;
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const url = new URL("https://api.eia.gov/v2/petroleum/pri/spt/data/");
