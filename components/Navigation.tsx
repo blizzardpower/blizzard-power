@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/app/providers";
@@ -61,49 +62,113 @@ const links = [
 export default function Navigation() {
   const { theme, t } = useTheme();
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 40px",
-        height: "56px",
-        background: t.navBg,
-        backdropFilter: "blur(12px)",
-        borderBottom: `1px solid ${t.border}`,
-        fontFamily: "'DM Sans', sans-serif",
-      }}
-    >
-      <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-        <img
-          src="/blizzard.svg"
-          alt="Blizzard Power"
-          style={{ height: "55px", width: "auto" }}
-        />
-      </Link>
-      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+    <>
+      <nav
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 40px",
+          height: "56px",
+          background: t.navBg,
+          backdropFilter: "blur(12px)",
+          borderBottom: `1px solid ${t.border}`,
+          fontFamily: "'DM Sans', sans-serif",
+        }}
+      >
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <img
+            src="/blizzard.svg"
+            alt="Blizzard Power"
+            style={{ height: "55px", width: "auto" }}
+          />
+        </Link>
+
+        {/* Desktop nav links */}
+        <div className="nav-links-desktop" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          {links.map((link) => {
+            const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="nav-link"
+                style={{
+                  padding: "6px 14px",
+                  fontSize: "13px",
+                  fontWeight: isActive ? 600 : 400,
+                  color: isActive ? t.accent : t.textMuted,
+                  background: isActive ? `${t.accent}14` : "transparent",
+                  border: "none",
+                  borderRadius: "4px",
+                  textDecoration: "none",
+                  fontFamily: "'DM Sans', sans-serif",
+                  transition: "all 0.2s",
+                }}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+          <div className="nav-divider" style={{ width: "1px", height: "20px", background: t.border, margin: "0 10px" }} />
+          <ThemeToggle />
+        </div>
+
+        {/* Mobile hamburger + theme toggle */}
+        <div className="nav-hamburger">
+          <ThemeToggle />
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "4px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+              marginLeft: "12px",
+            }}
+          >
+            <span style={{ display: "block", width: "22px", height: "2px", background: t.text, borderRadius: "1px", transition: "all 0.3s", transform: mobileOpen ? "rotate(45deg) translateY(7px)" : "none" }} />
+            <span style={{ display: "block", width: "22px", height: "2px", background: t.text, borderRadius: "1px", transition: "all 0.3s", opacity: mobileOpen ? 0 : 1 }} />
+            <span style={{ display: "block", width: "22px", height: "2px", background: t.text, borderRadius: "1px", transition: "all 0.3s", transform: mobileOpen ? "rotate(-45deg) translateY(-7px)" : "none" }} />
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile dropdown panel */}
+      <div
+        className={`nav-mobile-panel ${mobileOpen ? "open" : ""}`}
+        style={{
+          background: t.navBg,
+          backdropFilter: "blur(12px)",
+          borderBottom: mobileOpen ? `1px solid ${t.border}` : "none",
+        }}
+      >
         {links.map((link) => {
           const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
           return (
             <Link
               key={link.href}
               href={link.href}
-              className="nav-link"
+              onClick={() => setMobileOpen(false)}
               style={{
-                padding: "6px 14px",
-                fontSize: "13px",
+                padding: "12px 16px",
+                fontSize: "15px",
                 fontWeight: isActive ? 600 : 400,
                 color: isActive ? t.accent : t.textMuted,
                 background: isActive ? `${t.accent}14` : "transparent",
-                border: "none",
-                borderRadius: "4px",
+                borderRadius: "6px",
                 textDecoration: "none",
                 fontFamily: "'DM Sans', sans-serif",
                 transition: "all 0.2s",
@@ -113,9 +178,7 @@ export default function Navigation() {
             </Link>
           );
         })}
-        <div style={{ width: "1px", height: "20px", background: t.border, margin: "0 10px" }} />
-        <ThemeToggle />
       </div>
-    </nav>
+    </>
   );
 }

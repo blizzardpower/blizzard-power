@@ -98,10 +98,10 @@ export default function HomePage() {
   ];
 
   return (
-    <div style={{ padding: "0 40px" }}>
+    <div className="page-padding">
       <div style={{ paddingTop: "50px", paddingBottom: "48px" }} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "56px" }}>
+      <div className="grid-stats" style={{ marginBottom: "56px" }}>
         {allCards.map((s) => {
           const card = (
             <StatCard
@@ -125,13 +125,13 @@ export default function HomePage() {
         })}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: "32px", alignItems: "start", marginBottom: "64px" }}>
+      <div className="grid-content" style={{ marginBottom: "64px" }}>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h2 style={{ fontSize: "16px", fontWeight: 600, color: t.text }}>Latest Analysis</h2>
             <Link href="/blog" style={{ fontSize: "12px", color: t.accent }}>View all →</Link>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {blogPosts.map((post, i) => (
               <div key={i} style={{ padding: "18px 20px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", transition: "background 0.2s" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
@@ -151,7 +151,7 @@ export default function HomePage() {
             <h2 style={{ fontSize: "16px", fontWeight: 600, color: t.text }}>Company Profiles</h2>
             <Link href="/profiles" style={{ fontSize: "12px", color: t.accent }}>Browse all →</Link>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {profiles.map((p, i) => (
               <Link key={i} href={`/profiles/${p.slug}`} style={{ textDecoration: "none" }}>
                 <div style={{ padding: "16px 18px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", transition: "border-color 0.2s" }}>

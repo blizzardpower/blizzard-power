@@ -60,11 +60,14 @@ export default function ProfilesPage() {
   const { theme, t } = useTheme();
 
   return (
-    <div style={{ padding: "100px 40px 40px" }}>
+    <div className="page-padding" style={{ paddingTop: "100px" }}>
       <div style={{ marginBottom: "32px" }}>
         <h1 style={{ fontSize: "28px", fontWeight: 700, color: t.text }}>Company Profiles</h1>
+        <p style={{ fontSize: "14px", color: t.textMuted, marginTop: "8px" }}>
+          Data-driven profiles of firms across energy sectors. Financial data from latest public filings.
+        </p>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
+      <div className="grid-profiles">
         {companies.map((c, i) => (
           <Link key={i} href={`/profiles/${c.slug}`} style={{ textDecoration: "none" }}>
             <div style={{ padding: "24px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", transition: "all 0.2s", borderLeft: `3px solid ${getSectorColor(c.sector, theme)}` }}>

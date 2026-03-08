@@ -15,5 +15,133 @@ a {
 }
 
 .nav-link:hover {
-  background: #5c588b10 !important;
+  background: #5c588b33 !important;
+}
+
+/* ── Responsive utilities ── */
+
+/* Page padding */
+.page-padding {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+/* Stat cards grid: 4 columns → 2 on mobile */
+.grid-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* Two-column content layout: main + sidebar → stacked */
+.grid-content {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Profiles index: 2 columns → 1 on mobile */
+.grid-profiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Trackers: 2 columns → 1 on mobile */
+.grid-trackers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* Desktop nav links */
+.nav-links-desktop {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Mobile hamburger button */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Mobile nav panel */
+.nav-mobile-panel {
+  display: none;
+}
+
+/* Nav divider */
+.nav-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 10px;
+}
+
+@media (max-width: 768px) {
+  .page-padding {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .grid-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .grid-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .grid-profiles {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-trackers {
+    grid-template-columns: 1fr;
+  }
+
+  /* Hide desktop nav, show hamburger */
+  .nav-links-desktop {
+    display: none !important;
+  }
+
+  .nav-divider {
+    display: none !important;
+  }
+
+  .nav-hamburger {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Mobile nav panel when open */
+  .nav-mobile-panel.open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    padding: 8px 16px 16px;
+    gap: 4px;
+  }
+
+  /* Profile detail pages */
+  .profile-detail {
+    max-width: 100% !important;
+  }
+
+  /* Stat card value size */
+  .stat-value {
+    font-size: 22px !important;
+  }
 }
