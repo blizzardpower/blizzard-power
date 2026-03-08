@@ -10,7 +10,8 @@ export async function GET() {
   url.searchParams.set("frequency", "daily");
   url.searchParams.set("data[0]", "value");
   url.searchParams.set("facets[respondent][]", "US48");
-  url.searchParams.set("facets[type-name][]", "Demand");
+  url.searchParams.set("facets[type][]", "D");
+  url.searchParams.set("facets[timezone][]", "Eastern");
   url.searchParams.set("sort[0][column]", "period");
   url.searchParams.set("sort[0][direction]", "desc");
   url.searchParams.set("length", "1260");
