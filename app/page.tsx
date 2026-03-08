@@ -23,8 +23,34 @@ const placeholderStats = [
   { label: "EV Share of New Sales", value: "11.3", unit: "%", change: 2.8, sector: "Transportation", trend: "up" as const },
   { label: "U.S. Coal Production", value: "432", unit: "Mt", change: -6.1, sector: "Industry", trend: "down" as const },
   { label: "Solar Installed Capacity", value: "211", unit: "GW", change: 22.4, sector: "Power", trend: "up" as const },
-  { label: "Transmission Buildout", value: "—", unit: "GW-mi", change: 0, sector: "Power", trend: "up" as const },
+  { label: "Transmission Buildout", value: "\u2014", unit: "GW-mi", change: 0, sector: "Power", trend: "up" as const },
 ];
+
+interface DataPoint {
+  period: string;
+  value: number;
+}
+
+function findYoYChange(data: DataPoint[]): number {
+  if (data.length < 2) return 0;
+  const latest = data[data.length - 1];
+  const latestDate = new Date(latest.period + "T00:00:00");
+  const targetDate = new Date(latestDate);
+  targetDate.setFullYear(targetDate.getFullYear() - 1);
+
+  let best: DataPoint | null = null;
+  let bestDiff = Infinity;
+  for (const p of data) {
+    const diff = Math.abs(new Date(p.period + "T00:00:00").getTime() - targetDate.getTime());
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = p;
+    }
+  }
+
+  if (!best || bestDiff > 5 * 24 * 60 * 60 * 1000) return 0;
+  return parseFloat((((latest.value - best.value) / best.value) * 100).toFixed(1));
+}
 
 interface LiveCard {
   label: string;
@@ -48,11 +74,12 @@ export default function HomePage() {
     fetch("/api/prices/henry-hub")
       .then((r) => r.json())
       .then((json) => {
-        const prices = json.data.map((r: { price: number }) => r.price).reverse();
-        const latest = prices[prices.length - 1];
-        const prev = prices[prices.length - 2];
-        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
-        setHenryHub({ value: latest.toFixed(2), change, sparkData: prices.slice(-60) });
+        const mapped: DataPoint[] = json.data
+          .map((r: { period: string; price: number }) => ({ period: r.period, value: r.price }))
+          .reverse();
+        const latest = mapped[mapped.length - 1];
+        const change = findYoYChange(mapped);
+        setHenryHub({ value: latest.value.toFixed(2), change, sparkData: mapped.map((r) => r.value).slice(-60) });
       })
       .catch((err) => console.error("Henry Hub error:", err));
 
@@ -60,11 +87,12 @@ export default function HomePage() {
     fetch("/api/prices/wti-crude")
       .then((r) => r.json())
       .then((json) => {
-        const prices = json.data.map((r: { price: number }) => r.price).reverse();
-        const latest = prices[prices.length - 1];
-        const prev = prices[prices.length - 2];
-        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
-        setWtiCrude({ value: latest.toFixed(2), change, sparkData: prices.slice(-60) });
+        const mapped: DataPoint[] = json.data
+          .map((r: { period: string; price: number }) => ({ period: r.period, value: r.price }))
+          .reverse();
+        const latest = mapped[mapped.length - 1];
+        const change = findYoYChange(mapped);
+        setWtiCrude({ value: latest.value.toFixed(2), change, sparkData: mapped.map((r) => r.value).slice(-60) });
       })
       .catch((err) => console.error("WTI error:", err));
 
@@ -72,11 +100,12 @@ export default function HomePage() {
     fetch("/api/prices/electricity-demand")
       .then((r) => r.json())
       .then((json) => {
-        const values = json.data.map((r: { value: number }) => r.value).reverse();
-        const latest = values[values.length - 1];
-        const prev = values[values.length - 2];
-        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
-        setElecDemand({ value: latest.toLocaleString(), change, sparkData: values.slice(-60) });
+        const mapped: DataPoint[] = json.data
+          .map((r: { period: string; value: number }) => ({ period: r.period, value: r.value }))
+          .reverse();
+        const latest = mapped[mapped.length - 1];
+        const change = findYoYChange(mapped);
+        setElecDemand({ value: latest.value.toLocaleString(), change, sparkData: mapped.map((r) => r.value).slice(-60) });
       })
       .catch((err) => console.error("Electricity demand error:", err));
 
@@ -84,11 +113,12 @@ export default function HomePage() {
     fetch("/api/prices/residential-rate")
       .then((r) => r.json())
       .then((json) => {
-        const prices = json.data.map((r: { price: number }) => r.price).reverse();
-        const latest = prices[prices.length - 1];
-        const prev = prices[prices.length - 2];
-        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
-        setResRate({ value: latest.toFixed(1), change, sparkData: prices.slice(-20) });
+        const mapped: DataPoint[] = json.data
+          .map((r: { period: string; price: number }) => ({ period: r.period, value: r.price }))
+          .reverse();
+        const latest = mapped[mapped.length - 1];
+        const change = findYoYChange(mapped);
+        setResRate({ value: latest.value.toFixed(1), change, sparkData: mapped.map((r) => r.value).slice(-20) });
       })
       .catch((err) => console.error("Residential rate error:", err));
   }, []);

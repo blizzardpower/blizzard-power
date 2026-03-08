@@ -94,7 +94,7 @@ export function StatCard({
             <span style={{ fontSize: "12px", fontWeight: 600, color: isPositive ? t.green : t.red }}>
               {isPositive ? "\u25B2" : "\u25BC"} {Math.abs(change)}%
             </span>
-            <span style={{ fontSize: "11px", color: t.textDim, marginLeft: "6px" }}>vs last month</span>
+            <span style={{ fontSize: "11px", color: t.textDim, marginLeft: "6px" }}>YoY</span>
           </div>
         </div>
         <Sparkline data={sparkData} color={color} />
