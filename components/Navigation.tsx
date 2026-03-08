@@ -139,9 +139,9 @@ export default function Navigation() {
               marginLeft: "12px",
             }}
           >
-            <span style={{ display: "block", width: "22px", height: "2px", background: t.text, borderRadius: "1px", transition: "all 0.3s", transform: mobileOpen ? "rotate(45deg) translateY(7px)" : "none" }} />
+            <span style={{ display: "block", width: "22px", height: "2px", background: t.text, borderRadius: "1px", transition: "all 0.3s", transform: mobileOpen ? "translateY(7px) rotate(45deg)" : "none" }} />
             <span style={{ display: "block", width: "22px", height: "2px", background: t.text, borderRadius: "1px", transition: "all 0.3s", opacity: mobileOpen ? 0 : 1 }} />
-            <span style={{ display: "block", width: "22px", height: "2px", background: t.text, borderRadius: "1px", transition: "all 0.3s", transform: mobileOpen ? "rotate(-45deg) translateY(-7px)" : "none" }} />
+            <span style={{ display: "block", width: "22px", height: "2px", background: t.text, borderRadius: "1px", transition: "all 0.3s", transform: mobileOpen ? "translateY(-7px) rotate(-45deg)" : "none" }} />
           </button>
         </div>
       </nav>
