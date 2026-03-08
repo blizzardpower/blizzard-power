@@ -91,7 +91,16 @@ a {
 
   .grid-stats {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 8px;
+  }
+
+  .grid-stats > a,
+  .grid-stats > div {
+    min-width: 0;
+  }
+
+  .grid-stats svg {
+    max-width: 80px;
   }
 
   .grid-content {
@@ -138,10 +147,5 @@ a {
   /* Profile detail pages */
   .profile-detail {
     max-width: 100% !important;
-  }
-
-  /* Stat card value size */
-  .stat-value {
-    font-size: 22px !important;
   }
 }

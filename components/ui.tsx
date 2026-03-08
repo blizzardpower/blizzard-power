@@ -55,9 +55,19 @@ export function SectorTag({ sector }: { sector: string }) {
 }
 
 export function StatCard({
-  label, value, change, unit, sparkData, color,
+  label,
+  value,
+  change,
+  unit,
+  sparkData,
+  color,
 }: {
-  label: string; value: string; change: number; unit?: string; sparkData: number[]; color: string;
+  label: string;
+  value: string;
+  change: number;
+  unit?: string;
+  sparkData: number[];
+  color: string;
 }) {
   const { t } = useTheme();
   const isPositive = change >= 0;
@@ -67,18 +77,19 @@ export function StatCard({
         background: t.bgCard,
         border: `1px solid ${t.border}`,
         borderRadius: "6px",
-        padding: "20px",
+        padding: "16px",
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
+        gap: "10px",
         transition: "border-color 0.2s, background 0.3s",
+        overflow: "hidden",
       }}
     >
       <div style={{ fontSize: "11px", fontWeight: 500, color: t.textMuted, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <div>
-          <span style={{ fontSize: "28px", fontWeight: 700, color: t.text, fontFamily: "'Space Mono', monospace" }}>{value}</span>
-          {unit && <span style={{ fontSize: "13px", color: t.textMuted, marginLeft: "4px" }}>{unit}</span>}
+        <div style={{ minWidth: 0 }}>
+          <span style={{ fontSize: "24px", fontWeight: 700, color: t.text, fontFamily: "'Space Mono', monospace" }}>{value}</span>
+          {unit && <span style={{ fontSize: "12px", color: t.textMuted, marginLeft: "4px" }}>{unit}</span>}
           <div style={{ marginTop: "4px" }}>
             <span style={{ fontSize: "12px", fontWeight: 600, color: isPositive ? t.green : t.red }}>
               {isPositive ? "\u25B2" : "\u25BC"} {Math.abs(change)}%
@@ -100,7 +111,7 @@ export function Footer() {
         borderTop: `1px solid ${t.border}`,
         padding: "24px 0",
         display: "flex",
-        justifyContent: "space-between",
+        justifyContent: "flex-start",
         alignItems: "center",
       }}
     >
