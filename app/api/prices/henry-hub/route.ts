@@ -14,9 +14,8 @@ export async function GET() {
   url.searchParams.set("sort[0][direction]", "desc");
   url.searchParams.set("length", "1260");
 
-  const res = await fetch(url.toString(), {
-    next: { revalidate: 86400, tags: ["prices-henry-hub"] },
-  });
+  const res = await fetch(url.toString(), { cache: "no-store" });
+
   const json = await res.json();
 
   const rows = json.response.data

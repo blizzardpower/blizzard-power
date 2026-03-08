@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -7,12 +7,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  revalidateTag("prices-henry-hub");
-  revalidateTag("prices-brent-crude");
+  revalidatePath("/api/prices/henry-hub", "page");
+  revalidatePath("/api/prices/brent-crude", "page");
 
   return NextResponse.json({
     revalidated: true,
-    tags: ["prices-henry-hub", "prices-brent-crude"],
     timestamp: new Date().toISOString(),
   });
 }
