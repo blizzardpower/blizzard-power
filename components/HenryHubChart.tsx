@@ -16,15 +16,8 @@ interface PriceRow {
   price_per_mmbtu: number;
 }
 
-const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
 function periodToLabel(period: string): string {
-  const parts = period.split("-");
-  const monthIndex = parseInt(parts[1], 10) - 1;
-  return `${MONTH_NAMES[monthIndex]} ${parts[0]}`;
+  return period.substring(0, 4);
 }
 
 export default function HenryHubChart() {
@@ -33,7 +26,10 @@ export default function HenryHubChart() {
 
   useEffect(() => {
     fetch("/api/prices/henry-hub")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((json) => {
         const formatted: PriceRow[] = json.data
           .map((row: { period: string; price: number }) => ({
@@ -44,29 +40,28 @@ export default function HenryHubChart() {
 
         setData(formatted);
         setLastUpdated(json.lastUpdated || "");
-      });
+      })
+      .catch((err) => console.error("Chart fetch error:", err));
   }, []);
 
-  // Compute one tick per month: pick the first trading day of each month
-  const monthlyTicks = useMemo(() => {
+  const januaryTicks = useMemo(() => {
     const seen = new Set<string>();
     const ticks: string[] = [];
     for (const row of data) {
-      const monthKey = row.period.substring(0, 7); // "YYYY-MM"
+      const monthKey = row.period.substring(0, 7);
       if (!seen.has(monthKey)) {
         seen.add(monthKey);
         ticks.push(row.period);
       }
     }
-    // Show every 3rd month to avoid crowding on a 5-year chart
-    return ticks.filter((_, i) => i % 3 === 0);
+    return ticks.filter((t) => t.substring(5, 7) === "01");
   }, [data]);
 
   if (data.length === 0) return <p>Loading chart...</p>;
 
   return (
-    <div className="w-full">
-      <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "12px" }}>
+    <div>
+      <h3 style={{ fontSize: "18px", fontWeight: 600, marginBottom: "24px" }}>
         Henry Hub Natural Gas — Daily Spot Price ($/MMBtu)
       </h3>
       <ResponsiveContainer width="100%" height={400}>
@@ -74,7 +69,7 @@ export default function HenryHubChart() {
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="period"
-            ticks={monthlyTicks}
+            ticks={januaryTicks}
             tickFormatter={(value: string) => periodToLabel(value)}
             tick={{ fontSize: 11 }}
             tickLine={false}

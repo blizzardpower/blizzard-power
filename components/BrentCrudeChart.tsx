@@ -16,15 +16,8 @@ interface PriceRow {
   price_per_barrel: number;
 }
 
-const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
 function periodToLabel(period: string): string {
-  const parts = period.split("-");
-  const monthIndex = parseInt(parts[1], 10) - 1;
-  return `${MONTH_NAMES[monthIndex]} ${parts[0]}`;
+  return period.substring(0, 4);
 }
 
 export default function BrentCrudeChart() {
@@ -33,7 +26,10 @@ export default function BrentCrudeChart() {
 
   useEffect(() => {
     fetch("/api/prices/brent-crude")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((json) => {
         const formatted: PriceRow[] = json.data
           .map((row: { period: string; price: number }) => ({
@@ -44,10 +40,11 @@ export default function BrentCrudeChart() {
 
         setData(formatted);
         setLastUpdated(json.lastUpdated || "");
-      });
+      })
+      .catch((err) => console.error("Chart fetch error:", err));
   }, []);
 
-  const monthlyTicks = useMemo(() => {
+  const januaryTicks = useMemo(() => {
     const seen = new Set<string>();
     const ticks: string[] = [];
     for (const row of data) {
@@ -57,14 +54,14 @@ export default function BrentCrudeChart() {
         ticks.push(row.period);
       }
     }
-    return ticks.filter((_, i) => i % 3 === 0);
+    return ticks.filter((t) => t.substring(5, 7) === "01");
   }, [data]);
 
   if (data.length === 0) return <p>Loading chart...</p>;
 
   return (
-    <div className="w-full">
-      <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "12px" }}>
+    <div>
+      <h3 style={{ fontSize: "18px", fontWeight: 600, marginBottom: "24px" }}>
         Brent Crude Oil — Daily Spot Price ($/barrel)
       </h3>
       <ResponsiveContainer width="100%" height={400}>
@@ -72,7 +69,7 @@ export default function BrentCrudeChart() {
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="period"
-            ticks={monthlyTicks}
+            ticks={januaryTicks}
             tickFormatter={(value: string) => periodToLabel(value)}
             tick={{ fontSize: 11 }}
             tickLine={false}
