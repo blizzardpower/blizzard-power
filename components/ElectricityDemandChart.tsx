@@ -20,7 +20,7 @@ function periodToLabel(period: string): string {
   return period.substring(0, 4);
 }
 
-export default function ElectricityDemandChart() {
+export default function ElectricityDemandChart({ color = "#1a8bb3" }: { color?: string }) {
   const [data, setData] = useState<DemandRow[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
@@ -93,7 +93,7 @@ export default function ElectricityDemandChart() {
           <Line
             type="monotone"
             dataKey="demand"
-            stroke="#7c5cbf"
+            stroke={color}
             strokeWidth={2}
             dot={false}
           />

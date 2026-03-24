@@ -31,7 +31,7 @@ function periodToTooltip(period: string): string {
   return `${MONTH_NAMES[monthIndex]} ${parts[0]}`;
 }
 
-export default function ResidentialRateChart() {
+export default function ResidentialRateChart({ color = "#d4880a" }: { color?: string }) {
   const [data, setData] = useState<RateRow[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
@@ -100,7 +100,7 @@ export default function ResidentialRateChart() {
           <Line
             type="monotone"
             dataKey="price"
-            stroke="#e6a532"
+            stroke={color}
             strokeWidth={2}
             dot={false}
           />

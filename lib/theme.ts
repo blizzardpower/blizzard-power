@@ -47,11 +47,11 @@ export type ThemeName = "light" | "dark";
 export type ThemeColors = (typeof THEMES)["light"] | (typeof THEMES)["dark"];
 
 export const sectorColorMap = {
-  Residential: { base: "#1a8bb3", dark: "#4dc9f6" },
-  Power: { base: "#d4880a", dark: "#f5a623" },
+  Buildings:      { base: "#d4880a", dark: "#f5a623" },
+  Power:          { base: "#1a8bb3", dark: "#4dc9f6" },
   Transportation: { base: "#16875d", dark: "#34d399" },
-  Agriculture: { base: "#7c5cbf", dark: "#a78bfa" },
-  Industry: { base: "#c93b3b", dark: "#f87171" },
+  Agriculture:    { base: "#7c5cbf", dark: "#a78bfa" },
+  Industry:       { base: "#c93b3b", dark: "#f87171" },
 } as const;
 
 export type SectorName = keyof typeof sectorColorMap;

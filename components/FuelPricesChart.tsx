@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -16,40 +16,53 @@ interface PriceRow {
   price: number;
 }
 
-function periodToYear(period: string): string {
+function periodToLabel(period: string): string {
   return period.substring(0, 4);
 }
 
-export default function HenryHubChart({ color = "#1a8bb3" }: { color?: string }) {
+export default function FuelPricesChart({ color = "#16875d" }: { color?: string }) {
   const [data, setData] = useState<PriceRow[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
   useEffect(() => {
-    fetch("/api/prices/henry-hub")
+    fetch("/api/prices/fuel-prices")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((json) => {
-        const formatted: PriceRow[] = (json.data as { period: string; price: number }[])
-          .sort((a, b) => a.period.localeCompare(b.period));
+        const formatted: PriceRow[] = json.data
+          .map((row: { period: string; price: number }) => ({
+            period: row.period,
+            price: row.price,
+          }))
+          .sort((a: PriceRow, b: PriceRow) => a.period.localeCompare(b.period));
+
         setData(formatted);
         setLastUpdated(json.lastUpdated || "");
       })
-      .catch((err) => console.error("HenryHubChart fetch error:", err));
+      .catch((err) => console.error("Chart fetch error:", err));
   }, []);
 
-  const januaryTicks = data
-    .map((r) => r.period)
-    .filter((p) => p.substring(5, 7) === "01")
-    .filter((p, i, arr) => arr.indexOf(p) === i);
+  const januaryTicks = useMemo(() => {
+    const seen = new Set<string>();
+    const ticks: string[] = [];
+    for (const row of data) {
+      const monthKey = row.period.substring(0, 7);
+      if (!seen.has(monthKey)) {
+        seen.add(monthKey);
+        ticks.push(row.period);
+      }
+    }
+    return ticks.filter((t) => t.substring(5, 7) === "01");
+  }, [data]);
 
   if (data.length === 0) return <p>Loading chart...</p>;
 
   return (
     <div>
       <h3 style={{ fontSize: "18px", fontWeight: 600, marginBottom: "24px" }}>
-        Henry Hub Natural Gas Spot Price ($/MMBtu)
+        U.S. Regular Gasoline — Weekly Retail Price ($/gallon)
       </h3>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={data} margin={{ top: 5, right: 40, bottom: 5, left: 5 }}>
@@ -57,14 +70,14 @@ export default function HenryHubChart({ color = "#1a8bb3" }: { color?: string })
           <XAxis
             dataKey="period"
             ticks={januaryTicks}
-            tickFormatter={periodToYear}
+            tickFormatter={(value: string) => periodToLabel(value)}
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={{ stroke: "#ccc" }}
           />
           <YAxis
             tick={{ fontSize: 12 }}
-            tickFormatter={(val: number) => `$${val}`}
+            tickFormatter={(val: number) => `$${val.toFixed(2)}`}
           />
           <Tooltip
             labelFormatter={(value) => {
@@ -72,7 +85,9 @@ export default function HenryHubChart({ color = "#1a8bb3" }: { color?: string })
               return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
             }}
             formatter={(val: number | undefined) =>
-              val !== undefined ? [`$${val.toFixed(2)}`, "Price"] : ["", "Price"]
+              val !== undefined
+                ? [`$${val.toFixed(2)}/gal`, "Price"]
+                : ["", "Price"]
             }
           />
           <Line
@@ -85,7 +100,8 @@ export default function HenryHubChart({ color = "#1a8bb3" }: { color?: string })
         </LineChart>
       </ResponsiveContainer>
       <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
-        Source: U.S. Energy Information Administration | Last updated: {lastUpdated}
+        Source: U.S. Energy Information Administration | Last updated:{" "}
+        {lastUpdated} | Weekly
       </p>
     </div>
   );
