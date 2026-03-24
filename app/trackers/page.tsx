@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "@/app/providers";
 import WtiCrudeChart from "@/components/WtiCrudeChart";
+import BrentCrudeChart from "@/components/BrentCrudeChart";
 import HenryHubChart from "@/components/HenryHubChart";
 import ElectricityDemandChart from "@/components/ElectricityDemandChart";
 import ResidentialRateChart from "@/components/ResidentialRateChart";
@@ -32,6 +33,15 @@ const TRACKERS: Tracker[] = [
     id: "wti-crude",
     sector: "Power",
     name: "WTI Crude Price",
+    unit: "$/barrel",
+    frequency: "Daily",
+    source: "EIA",
+    records: "1,260+",
+  },
+  {
+    id: "brent-crude",
+    sector: "Power",
+    name: "Brent Crude Price",
     unit: "$/barrel",
     frequency: "Daily",
     source: "EIA",
@@ -136,6 +146,26 @@ function useTrackerStats(trackerId: string): TrackerStats | null {
 
   useEffect(() => {
     setStats(null);
+
+    if (trackerId === "brent-crude") {
+      fetch("/api/prices/brent-crude")
+        .then((r) => r.json())
+        .then((json) => {
+          const rows = (json.data as { period: string; price: number }[])
+            .sort((a, b) => a.period.localeCompare(b.period));
+          if (!rows.length) return;
+          const values = rows.map((r) => r.price);
+          const periods = rows.map((r) => r.period);
+          const years = yearsBetween(periods);
+          setStats({
+            last:       `$${rows[rows.length - 1].price.toFixed(2)}/barrel`,
+            lastLabel:  formatPeriod(rows[rows.length - 1].period),
+            max:        `$${Math.max(...values).toFixed(2)}/barrel`,
+            min:        `$${Math.min(...values).toFixed(2)}/barrel`,
+            rangeLabel: rangeLabel(years),
+          });
+        });
+    }
 
     if (trackerId === "wti-crude") {
       fetch("/api/prices/wti-crude")
@@ -247,6 +277,7 @@ function TrackerChart({ tracker, color }: { tracker: Tracker; color: string }) {
   const { t } = useTheme();
 
   if (tracker.id === "wti-crude")          return <WtiCrudeChart color={color} />;
+  if (tracker.id === "brent-crude")        return <BrentCrudeChart color={color} />;
   if (tracker.id === "henry-hub")          return <HenryHubChart color={color} />;
   if (tracker.id === "electricity-demand") return <ElectricityDemandChart color={color} />;
   if (tracker.id === "residential-rate")   return <ResidentialRateChart color={color} />;

@@ -6,13 +6,6 @@ import { getSectorColor, generateSparkline } from "@/lib/theme";
 import { StatCard, SectorTag, Sparkline, Footer } from "@/components/ui";
 import { useState, useEffect } from "react";
 
-const stats = [
-  { label: "Avg. Residential Electricity Rate", value: "16.2", unit: "\u00A2/kWh", change: 3.1, sector: "Buildings", trend: "up" as const },
-  { label: "U.S. Grid Generation", value: "4,178", unit: "TWh", change: 1.4, sector: "Power", trend: "up" as const },
-  { label: "Nat Gas Henry Hub Spot", value: "2.84", unit: "$/MMBtu", change: -5.2, sector: "Power", trend: "down" as const },
-  { label: "EV Share of New Sales", value: "11.3", unit: "%", change: 2.8, sector: "Transportation", trend: "up" as const },
-];
-
 const blogPosts = [
   { title: "Industrial Heat Decarbonization: Where the Economics Actually Stand", sector: "Industry", date: "Feb 18, 2026", read: "8 min" },
   { title: "Heat Pump Adoption Rates Are Slowing — Here's the Data", sector: "Buildings", date: "Feb 14, 2026", read: "6 min" },
@@ -27,85 +20,66 @@ const profiles = [
   { name: "Rivian Automotive", sector: "Transportation", metric: "Deliveries: 62K", trend: "up" as const },
 ];
 
+type LiveStat = { value: string; change: number; sparkData: number[] };
+
+function useLiveStat(url: string): LiveStat | null {
+  const [stat, setStat] = useState<LiveStat | null>(null);
+  useEffect(() => {
+    fetch(url)
+      .then((r) => r.json())
+      .then((json) => {
+        const rows = (json.data as { period: string; price?: number; value?: number }[])
+          .map((r) => ({ period: r.period, price: r.price ?? r.value ?? NaN }))
+          .filter((r) => !isNaN(r.price))
+          .sort((a, b) => a.period.localeCompare(b.period));
+        if (rows.length < 2) return;
+        const latest = rows[rows.length - 1].price;
+        const prev   = rows[rows.length - 2].price;
+        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
+        setStat({ value: latest.toFixed(2), change, sparkData: rows.slice(-20).map((r) => r.price) });
+      })
+      .catch(() => {});
+  }, [url]);
+  return stat;
+}
+
 export default function HomePage() {
   const { theme, t } = useTheme();
 
-  const [henryHub, setHenryHub] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
-  const [fuelPrice, setFuelPrice] = useState<{ value: string; change: number; sparkData: number[] } | null>(null);
+  const wti       = useLiveStat("/api/prices/wti-crude");
+  const brent     = useLiveStat("/api/prices/brent-crude");
+  const henryHub  = useLiveStat("/api/prices/henry-hub");
+  const demand    = useLiveStat("/api/prices/electricity-demand");
+  const fuelPrice = useLiveStat("/api/prices/fuel-prices");
+  const resiRate  = useLiveStat("/api/prices/residential-rate");
 
-  useEffect(() => {
-    fetch("/api/prices/henry-hub")
-      .then((r) => r.json())
-      .then((json) => {
-        const rows = (json.data as { period: string; price: number }[])
-          .filter((r) => r.price != null && !isNaN(r.price))
-          .sort((a, b) => a.period.localeCompare(b.period));
-        if (rows.length < 2) return;
-        const latest = rows[rows.length - 1].price;
-        const prev = rows[rows.length - 2].price;
-        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
-        setHenryHub({
-          value: latest.toFixed(2),
-          change,
-          sparkData: rows.slice(-20).map((r) => r.price),
-        });
-      })
-      .catch((err) => console.error("Henry Hub fetch error:", err));
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/prices/fuel-prices")
-      .then((r) => r.json())
-      .then((json) => {
-        const rows = (json.data as { period: string; price: number }[])
-          .filter((r) => r.price != null && !isNaN(r.price))
-          .sort((a, b) => a.period.localeCompare(b.period));
-        if (rows.length < 2) return;
-        const latest = rows[rows.length - 1].price;
-        const prev = rows[rows.length - 2].price;
-        const change = parseFloat((((latest - prev) / prev) * 100).toFixed(1));
-        setFuelPrice({
-          value: latest.toFixed(2),
-          change,
-          sparkData: rows.slice(-20).map((r) => r.price),
-        });
-      })
-      .catch((err) => console.error("Fuel prices fetch error:", err));
-  }, []);
-
-  const displayStats = stats.map((s) => {
-    if (s.label === "Nat Gas Henry Hub Spot" && henryHub) {
-      return { ...s, value: henryHub.value, change: henryHub.change, sparkData: henryHub.sparkData };
-    }
-    return { ...s, sparkData: generateSparkline(20, s.trend) };
-  });
-
-  const row2Stats = [
-    {
-      label: "U.S. Regular Gasoline Price",
-      value: fuelPrice?.value ?? "—",
-      unit: "$/gal",
-      change: fuelPrice?.change ?? 0,
-      sector: "Transportation",
-      sparkData: fuelPrice?.sparkData ?? generateSparkline(20, "up"),
-    },
+  // One entry per tracker, in sidebar order
+  const trackerCards = [
+    { label: "WTI Crude Price",          unit: "$/barrel", sector: "Power",          live: wti },
+    { label: "Brent Crude Price",         unit: "$/barrel", sector: "Power",          live: brent },
+    { label: "Henry Hub Gas Price",       unit: "$/MMBtu",  sector: "Power",          live: henryHub },
+    { label: "Electricity Demand",        unit: "GWh",      sector: "Power",          live: demand },
+    { label: "EV Market Share",           unit: "% of sales", sector: "Transportation", live: null },
+    { label: "Fuel Price Tracker",        unit: "$/gal",    sector: "Transportation", live: fuelPrice },
+    { label: "Avg. Residential Rate",     unit: "¢/kWh",    sector: "Buildings",      live: resiRate },
   ];
 
   return (
     <div style={{ padding: "0 40px" }}>
       <div style={{ paddingTop: "50px", paddingBottom: "48px" }} />
 
-      {/* Row 1 */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "16px" }}>
-        {displayStats.map((s) => (
-          <StatCard key={s.label} label={s.label} value={s.value} unit={s.unit} change={s.change} sparkData={s.sparkData} color={getSectorColor(s.sector, theme)} />
-        ))}
-      </div>
-
-      {/* Row 2 — starts with fuel price, room to add more */}
+      {/* Tracker stat cards — 4 per row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "56px" }}>
-        {row2Stats.map((s) => (
-          <StatCard key={s.label} label={s.label} value={s.value} unit={s.unit} change={s.change} sparkData={s.sparkData} color={getSectorColor(s.sector, theme)} />
+        {trackerCards.map((s) => (
+          <StatCard
+            key={s.label}
+            label={s.label}
+            value={s.live?.value ?? "—"}
+            unit={s.unit}
+            change={s.live?.change ?? 0}
+            sparkData={s.live?.sparkData ?? generateSparkline(20, "up")}
+            color={getSectorColor(s.sector, theme)}
+          />
         ))}
       </div>
 
@@ -149,7 +123,6 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-
         </div>
       </div>
 
