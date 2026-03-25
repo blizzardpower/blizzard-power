@@ -21,6 +21,7 @@ const profiles = [
 ];
 
 type LiveStat = { value: string; change: number; sparkData: number[] };
+type TrackerCard = { label: string; unit: string; sector: string; live: LiveStat | null; formatValue?: (v: string) => string };
 
 function useLiveStat(url: string): LiveStat | null {
   const [stat, setStat] = useState<LiveStat | null>(null);
@@ -54,11 +55,11 @@ export default function HomePage() {
   const resiRate  = useLiveStat("/api/prices/residential-rate");
 
   // One entry per tracker, in sidebar order
-  const trackerCards = [
+  const trackerCards: TrackerCard[] = [
     { label: "WTI Crude Price",          unit: "$/barrel", sector: "Power",          live: wti },
     { label: "Brent Crude Price",         unit: "$/barrel", sector: "Power",          live: brent },
     { label: "Henry Hub Gas Price",       unit: "$/MMBtu",  sector: "Power",          live: henryHub },
-    { label: "Electricity Demand",        unit: "GWh",      sector: "Power",          live: demand },
+    { label: "Electricity Demand",        unit: "GWh",      sector: "Power",          live: demand, formatValue: (v: string) => Math.round(parseFloat(v)).toLocaleString() },
     { label: "EV Market Share",           unit: "% of sales", sector: "Transportation", live: null },
     { label: "Fuel Price Tracker",        unit: "$/gal",    sector: "Transportation", live: fuelPrice },
     { label: "Avg. Residential Rate",     unit: "¢/kWh",    sector: "Buildings",      live: resiRate },
@@ -74,7 +75,7 @@ export default function HomePage() {
           <StatCard
             key={s.label}
             label={s.label}
-            value={s.live?.value ?? "—"}
+            value={s.live ? (s.formatValue ? s.formatValue(s.live.value) : s.live.value) : "—"}
             unit={s.unit}
             change={s.live?.change ?? 0}
             sparkData={s.live?.sparkData ?? generateSparkline(20, "up")}
