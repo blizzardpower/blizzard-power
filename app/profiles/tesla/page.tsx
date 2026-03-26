@@ -16,7 +16,7 @@ export default function TeslaProfile() {
   );
 
   return (
-    <div style={{ padding: "100px 40px 60px", maxWidth: "860px" }}>
+    <div style={{ padding: "100px 40px 60px", maxWidth: "860px", margin: "0 auto" }}>
       <div style={{ marginBottom: "24px", fontSize: "13px", color: t.textMuted }}>
         <Link href="/profiles" style={{ color: t.accent, textDecoration: "none" }}>Profiles</Link>
         <span style={{ margin: "0 8px" }}>/</span><span style={{ color: t.text }}>Tesla</span>

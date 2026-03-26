@@ -5,8 +5,8 @@ import { useTheme } from "@/app/providers";
 import { SectorTag } from "@/components/ui";
 
 export default function BrookfieldProfile() {
-  const { theme, t } = useTheme();
-  const sH = (text: string) => ({ fontSize: "18px", fontWeight: 700 as const, color: t.text, marginBottom: "12px", marginTop: "40px", paddingBottom: "8px", borderBottom: `1px solid ${t.border}` });
+  const { t } = useTheme();
+  const sH = (_text: string) => ({ fontSize: "18px", fontWeight: 700 as const, color: t.text, marginBottom: "12px", marginTop: "40px", paddingBottom: "8px", borderBottom: `1px solid ${t.border}` });
   const sB = (label: string, value: string, sub?: string) => (
     <div key={label} style={{ padding: "16px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", flex: "1", minWidth: "140px" }}>
       <div style={{ fontSize: "10px", color: t.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>{label}</div>
@@ -16,7 +16,7 @@ export default function BrookfieldProfile() {
   );
 
   return (
-    <div style={{ padding: "100px 40px 60px", maxWidth: "860px" }}>
+    <div style={{ padding: "100px 40px 60px", maxWidth: "860px", margin: "0 auto" }}>
       <div style={{ marginBottom: "24px", fontSize: "13px", color: t.textMuted }}>
         <Link href="/profiles" style={{ color: t.accent, textDecoration: "none" }}>Profiles</Link>
         <span style={{ margin: "0 8px" }}>/</span><span style={{ color: t.text }}>Brookfield Renewable</span>

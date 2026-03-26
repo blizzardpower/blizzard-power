@@ -26,7 +26,7 @@ export default function GEVernovaProfile() {
   );
 
   return (
-    <div style={{ padding: "100px 40px 60px", maxWidth: "860px" }}>
+    <div style={{ padding: "100px 40px 60px", maxWidth: "860px", margin: "0 auto" }}>
       {/* Breadcrumb */}
       <div style={{ marginBottom: "24px", fontSize: "13px", color: t.textMuted }}>
         <Link href="/profiles" style={{ color: t.accent, textDecoration: "none" }}>Profiles</Link>

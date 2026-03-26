@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTheme } from "@/app/providers";
 import WtiCrudeChart from "@/components/WtiCrudeChart";
 import BrentCrudeChart from "@/components/BrentCrudeChart";
@@ -8,6 +9,7 @@ import HenryHubChart from "@/components/HenryHubChart";
 import ElectricityDemandChart from "@/components/ElectricityDemandChart";
 import ResidentialRateChart from "@/components/ResidentialRateChart";
 import FuelPricesChart from "@/components/FuelPricesChart";
+import GenerationMixChart from "@/components/GenerationMixChart";
 
 // ─── Tracker registry ────────────────────────────────────────────────────────
 
@@ -65,16 +67,16 @@ const TRACKERS: Tracker[] = [
     source: "EIA-930",
     records: "1,260+",
   },
-  // Transportation — one live, one placeholder
   {
-    id: "ev-market-share",
-    sector: "Transportation",
-    name: "EV Market Share",
-    unit: "% of new sales",
+    id: "generation-mix",
+    sector: "Power",
+    name: "Generation Mix",
+    unit: "GWh",
     frequency: "Monthly",
-    source: "BLS / Automakers",
-    records: "3,600+",
+    source: "EIA-923",
+    records: "10,000+",
   },
+  // Transportation — one live
   {
     id: "fuel-prices",
     sector: "Transportation",
@@ -280,6 +282,7 @@ function TrackerChart({ tracker, color }: { tracker: Tracker; color: string }) {
   if (tracker.id === "brent-crude")        return <BrentCrudeChart color={color} />;
   if (tracker.id === "henry-hub")          return <HenryHubChart color={color} />;
   if (tracker.id === "electricity-demand") return <ElectricityDemandChart color={color} />;
+  if (tracker.id === "generation-mix")     return <GenerationMixChart color={color} />;
   if (tracker.id === "residential-rate")   return <ResidentialRateChart color={color} />;
   if (tracker.id === "fuel-prices")        return <FuelPricesChart color={color} />;
 
@@ -305,9 +308,13 @@ function TrackerChart({ tracker, color }: { tracker: Tracker; color: string }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function TrackersPage() {
+function TrackersPageInner() {
   const { theme, t } = useTheme();
-  const [activeId, setActiveId] = useState<string>("wti-crude");
+  const searchParams = useSearchParams();
+  const initialId = searchParams.get("id") ?? "wti-crude";
+  const [activeId, setActiveId] = useState<string>(
+    TRACKERS.some((tr) => tr.id === initialId) ? initialId : "wti-crude"
+  );
 
   const active      = TRACKERS.find((tr) => tr.id === activeId) ?? TRACKERS[0];
   const sectorColor = SECTOR_COLOR[active.sector]?.[theme] ?? t.accent;
@@ -535,5 +542,13 @@ export default function TrackersPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function TrackersPage() {
+  return (
+    <Suspense>
+      <TrackersPageInner />
+    </Suspense>
   );
 }

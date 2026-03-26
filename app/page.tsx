@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useTheme } from "@/app/providers";
 import { getSectorColor, generateSparkline } from "@/lib/theme";
-import { StatCard, SectorTag, Sparkline, Footer } from "@/components/ui";
+import { StatCard, SectorTag, Footer } from "@/components/ui";
 import { useState, useEffect } from "react";
 
 const blogPosts = [
@@ -14,14 +14,14 @@ const blogPosts = [
 ];
 
 const profiles = [
-  { name: "NextEra Energy", sector: "Power", metric: "Capacity: 33 GW", trend: "up" as const },
-  { name: "Carrier Global", sector: "Buildings", metric: "Rev: $22.1B", trend: "up" as const },
-  { name: "Nucor Corporation", sector: "Industry", metric: "Output: 21.3Mt", trend: "down" as const },
-  { name: "Rivian Automotive", sector: "Transportation", metric: "Deliveries: 62K", trend: "up" as const },
+  { name: "NextEra Energy",       sector: "Power",          metric: "Capacity: 33 GW", trend: "up" as const,   slug: "nextera-energy" },
+  { name: "GE Vernova",           sector: "Power",          metric: "Rev: $38.1B",     trend: "up" as const,   slug: "ge-vernova" },
+  { name: "Constellation Energy", sector: "Power",          metric: "Nuclear: 22 GW",  trend: "up" as const,   slug: "constellation-energy" },
+  { name: "Rivian Automotive",    sector: "Transportation", metric: "Deliveries: 62K", trend: "up" as const,   slug: "rivian" },
 ];
 
 type LiveStat = { value: string; change: number; sparkData: number[] };
-type TrackerCard = { label: string; unit: string; sector: string; live: LiveStat | null; formatValue?: (v: string) => string };
+type TrackerCard = { label: string; unit: string; sector: string; live: LiveStat | null; formatValue?: (v: string) => string; trackerId: string };
 
 function useLiveStat(url: string): LiveStat | null {
   const [stat, setStat] = useState<LiveStat | null>(null);
@@ -56,13 +56,12 @@ export default function HomePage() {
 
   // One entry per tracker, in sidebar order
   const trackerCards: TrackerCard[] = [
-    { label: "WTI Crude Price",          unit: "$/barrel", sector: "Power",          live: wti },
-    { label: "Brent Crude Price",         unit: "$/barrel", sector: "Power",          live: brent },
-    { label: "Henry Hub Gas Price",       unit: "$/MMBtu",  sector: "Power",          live: henryHub },
-    { label: "Electricity Demand",        unit: "GWh",      sector: "Power",          live: demand, formatValue: (v: string) => Math.round(parseFloat(v)).toLocaleString() },
-    { label: "EV Market Share",           unit: "% of sales", sector: "Transportation", live: null },
-    { label: "Fuel Price Tracker",        unit: "$/gal",    sector: "Transportation", live: fuelPrice },
-    { label: "Avg. Residential Rate",     unit: "¢/kWh",    sector: "Buildings",      live: resiRate },
+    { label: "WTI Crude Price",          unit: "$/barrel",   sector: "Power",          live: wti,       trackerId: "wti-crude" },
+    { label: "Brent Crude Price",         unit: "$/barrel",   sector: "Power",          live: brent,     trackerId: "brent-crude" },
+    { label: "Henry Hub Gas Price",       unit: "$/MMBtu",    sector: "Power",          live: henryHub,  trackerId: "henry-hub" },
+    { label: "Electricity Demand",        unit: "GWh",        sector: "Power",          live: demand,    trackerId: "electricity-demand", formatValue: (v: string) => Math.round(parseFloat(v)).toLocaleString() },
+    { label: "Fuel Price Tracker",        unit: "$/gal",      sector: "Transportation", live: fuelPrice, trackerId: "fuel-prices" },
+    { label: "Avg. Residential Rate",     unit: "¢/kWh",      sector: "Buildings",      live: resiRate,  trackerId: "residential-rate" },
   ];
 
   return (
@@ -72,15 +71,16 @@ export default function HomePage() {
       {/* Tracker stat cards — 4 per row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "56px" }}>
         {trackerCards.map((s) => (
-          <StatCard
-            key={s.label}
-            label={s.label}
-            value={s.live ? (s.formatValue ? s.formatValue(s.live.value) : s.live.value) : "—"}
-            unit={s.unit}
-            change={s.live?.change ?? 0}
-            sparkData={s.live?.sparkData ?? generateSparkline(20, "up")}
-            color={getSectorColor(s.sector, theme)}
-          />
+          <Link key={s.label} href={`/trackers?id=${s.trackerId}`} style={{ textDecoration: "none" }}>
+            <StatCard
+              label={s.label}
+              value={s.live ? (s.formatValue ? s.formatValue(s.live.value) : s.live.value) : "—"}
+              unit={s.unit}
+              change={s.live?.change ?? 0}
+              sparkData={s.live?.sparkData ?? generateSparkline(20, "up")}
+              color={getSectorColor(s.sector, theme)}
+            />
+          </Link>
         ))}
       </div>
 
@@ -111,8 +111,9 @@ export default function HomePage() {
             <Link href="/profiles" style={{ fontSize: "12px", color: t.accent }}>Browse all →</Link>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {profiles.map((p, i) => (
-              <div key={i} style={{ padding: "16px 18px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "border-color 0.2s" }}>
+            {profiles.map((p) => (
+              <Link key={p.name} href={`/profiles/${p.slug}`} style={{ textDecoration: "none" }}>
+              <div style={{ padding: "16px 18px", background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: "6px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "border-color 0.2s" }}>
                 <div>
                   <div style={{ fontSize: "14px", fontWeight: 600, color: t.text, marginBottom: "6px" }}>{p.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -120,8 +121,8 @@ export default function HomePage() {
                     <span style={{ fontSize: "12px", color: t.textMuted }}>{p.metric}</span>
                   </div>
                 </div>
-                <Sparkline data={generateSparkline(12, p.trend)} color={getSectorColor(p.sector, theme)} width={64} height={24} />
               </div>
+              </Link>
             ))}
           </div>
         </div>
