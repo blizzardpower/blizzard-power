@@ -139,11 +139,11 @@ export default function GenerationMixChart({ color: _color }: { color?: string }
               const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
               return `${months[parseInt(month, 10) - 1]} ${year}`;
             }}
-            formatter={(val: number | undefined, name: string) => [
+            formatter={(val: number | undefined, name: string | undefined) => [
               val !== undefined
                 ? isPercent ? `${val.toFixed(1)}%` : `${val.toLocaleString()} GWh`
                 : "",
-              name,
+              name ?? "",
             ]}
           />
           {FUEL_TYPES.map((ft) => (
